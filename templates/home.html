@@ -1,0 +1,110 @@
+{% load static %}
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+  </head>
+  <body>
+    <nav class="bar">
+      <h1 class="logo">TINCHLIK</h1>
+      <ul class="list">
+        <li><a href="#">Asosiy</a></li>
+        <li><a href="#">Chat</a></li>
+        <li><a href="#">Biz bilan aloqa</a></li>
+      </ul>
+    </nav>
+
+    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+    <script src="{% static 'js/home.js' %}"></script>
+    <script>
+      const { animate, stagger } = anime;
+
+const logo = document.querySelector(".logo");
+
+// TINCHLIK harflarini spanlarga ajratamiz
+logo.innerHTML = logo.textContent
+    .split("")
+    .map(letter => `<span>${letter}</span>`)
+    .join("");
+
+const chars = document.querySelectorAll(".logo span");
+
+animate(chars, {
+    y: {
+        from: -50
+    },
+
+    opacity: {
+        from: 0
+    },
+
+    rotate: {
+        from: "-20deg"
+    },
+
+    duration: 900,
+
+    delay: stagger(100),
+
+    ease: "outBounce"
+});
+
+const { animate, stagger } = anime;
+
+const links = document.querySelectorAll(".list li a");
+
+
+// Sahifa ochilganda bittadan tepada tushadi
+animate(links, {
+    y: {
+        from: -50
+    },
+
+    opacity: {
+        from: 0
+    },
+
+    scale: {
+        from: 0.85
+    },
+
+    duration: 900,
+
+    delay: stagger(150),
+
+    ease: "outExpo"
+});
+
+
+// Hover animatsiya
+links.forEach(link => {
+
+    link.addEventListener("mouseenter", () => {
+
+        animate(link, {
+            y: -4,
+            scale: 1.06,
+            duration: 250,
+            ease: "outQuad"
+        });
+
+    });
+
+    link.addEventListener("mouseleave", () => {
+
+        animate(link, {
+            y: 0,
+            scale: 1,
+            duration: 250,
+            ease: "outQuad"
+        });
+
+    });
+
+});
+    </script>
+  </body>
+</html>
