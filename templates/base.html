@@ -1,0 +1,1037 @@
+{% load static %}
+
+<script>
+// Initial theme setup — run before stylesheets to avoid flash
+(function(){
+  try{
+    var theme = localStorage.getItem('theme');
+    if(!theme){
+      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
+        theme = 'dark';
+      } else {
+        theme = 'light';
+      }
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    // disable transitions until theme applied
+    var s = document.createElement('style'); s.id='theme-init-style'; s.innerHTML='*{transition:none!important}'; document.head.appendChild(s);
+  }catch(e){console.warn(e)}
+})();
+</script>
+
+<!doctype html>
+<html lang="uz">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+    <title>TINCHLIK | MFY</title>
+    <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+
+    <style>
+      * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+        font-family: Arial, sans-serif;
+      }
+
+      body {
+        background: var(--bg);
+        color: var(--text);
+      }
+
+      /* AUTH BUTTON STYLE
+         Eslatma: .register selector ishlatilmaydi,
+         shuning uchun home.html dagi KIRISH dizayniga aralashmaydi. */
+      .auth-open-register {
+        text-decoration: none;
+        color: white;
+        background: #161616;
+        padding: 12px 25px;
+        border-radius: 10px;
+        font-size: 15px;
+        font-weight: 600;
+        transition:
+          transform 0.3s ease,
+          background-color 0.3s ease,
+          box-shadow 0.3s ease,
+          color 0.3s ease;
+        cursor: pointer;
+      }
+
+      .auth-open-register:hover,
+      .auth-open-register:focus-visible {
+        transform: translateY(-2px);
+        background: #292929;
+        box-shadow: 0 12px 24px rgba(17, 24, 39, 0.12);
+      }
+
+      /* MODAL BACKGROUND */
+      .auth-overlay {
+        position: fixed;
+        inset: 0;
+
+        background: rgba(0, 0, 0, 0.55);
+        backdrop-filter: blur(7px);
+
+        display: none;
+        align-items: center;
+        justify-content: center;
+
+        z-index: 99999;
+
+        padding: 20px;
+      }
+
+      .auth-overlay.active {
+        display: flex;
+      }
+
+      /* MODAL */
+      .auth-modal {
+        width: 100%;
+        max-width: 470px;
+
+        background: var(--surface);
+        border-radius: 22px;
+
+        padding: 30px;
+
+        position: relative;
+
+        max-height: 92vh;
+        overflow-y: auto;
+
+        box-shadow: var(--shadow);
+        transition:
+          transform 0.35s ease,
+          box-shadow 0.35s ease,
+          background-color 0.35s ease,
+          border-color 0.35s ease;
+      }
+
+      /* CLOSE */
+      .auth-close {
+        position: absolute;
+
+        right: 20px;
+        top: 18px;
+
+        width: 38px;
+        height: 38px;
+
+        border-radius: 50%;
+        border: none;
+
+        background: var(--surface-strong);
+
+        font-size: 22px;
+
+        cursor: pointer;
+        transition:
+          transform 0.3s ease,
+          background-color 0.3s ease,
+          color 0.3s ease,
+          box-shadow 0.3s ease;
+      }
+
+      .auth-close:hover,
+      .auth-close:focus-visible {
+        background: rgba(0,0,0,0.06);
+        transform: translateY(-1px);
+      }
+
+      /* HEADER */
+      .auth-header {
+        text-align: center;
+        margin-bottom: 25px;
+      }
+
+      .auth-logo {
+        width: 60px;
+        height: 60px;
+
+        margin: auto;
+        margin-bottom: 12px;
+
+        border-radius: 16px;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        background: var(--button-bg);
+        color: var(--button-text);
+
+        font-weight: bold;
+        font-size: 23px;
+      }
+
+      .auth-header h2 {
+        font-size: 24px;
+        color: var(--text);
+      }
+
+      .auth-header p {
+        margin-top: 7px;
+        font-size: 14px;
+        color: var(--muted);
+      }
+
+      /* TABS */
+      .auth-tabs {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+
+        padding: 5px;
+
+        background: var(--surface-strong);
+
+        border-radius: 13px;
+
+        margin-bottom: 25px;
+      }
+
+      .auth-tab {
+        padding: 12px;
+
+        border: none;
+        border-radius: 9px;
+
+        cursor: pointer;
+
+        background: transparent;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        color: var(--muted);
+
+        transition: transform 0.25s ease, background-color 0.3s ease, color 0.3s ease, box-shadow 0.3s ease;
+      }
+
+      .auth-tab.active {
+        background: var(--surface);
+        color: var(--text);
+
+        box-shadow: 0 3px 10px rgba(0, 0, 0, 0.08);
+      }
+
+      /* FORM */
+      .auth-form {
+        display: none;
+      }
+
+      .auth-form.active {
+        display: block;
+      }
+
+      .form-row {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 12px;
+      }
+
+      .input-box {
+        margin-bottom: 15px;
+      }
+
+      .input-box label {
+        display: block;
+
+        font-size: 13px;
+        font-weight: 600;
+
+        margin-bottom: 7px;
+
+        color: #333;
+      }
+
+      .input-box input {
+        width: 100%;
+
+        padding: 14px;
+
+        border-radius: 11px;
+        border: 1px solid #dedede;
+
+        outline: none;
+
+        font-size: 14px;
+
+        transition: border-color 0.25s ease, box-shadow 0.25s ease, background-color 0.25s ease;
+      }
+
+      .input-box input:focus {
+        border-color: #111;
+
+        box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.05);
+      }
+
+      /* PASSWORD */
+      .password-box {
+        position: relative;
+      }
+
+      .password-box input {
+        padding-right: 50px;
+      }
+
+      .show-password {
+        position: absolute;
+
+        right: 10px;
+        top: 50%;
+
+        transform: translateY(-50%);
+
+        border: none;
+        background: none;
+
+        cursor: pointer;
+
+        font-size: 18px;
+        transition: opacity 0.25s ease, transform 0.25s ease;
+      }
+
+      .show-password:hover,
+      .show-password:focus-visible {
+        opacity: 0.8;
+        transform: translateY(-50%) scale(1.05);
+      }
+
+      /* CHECKBOX */
+      .terms {
+        display: flex;
+        align-items: flex-start;
+
+        gap: 9px;
+
+        margin-bottom: 18px;
+
+        color: #666;
+
+        font-size: 13px;
+      }
+
+      .terms input {
+        width: 17px;
+        height: 17px;
+
+        cursor: pointer;
+      }
+
+      .terms a {
+        color: #111;
+        font-weight: 600;
+      }
+
+      /* MAIN BUTTON */
+      .auth-submit {
+        width: 100%;
+
+        padding: 14px;
+
+        border-radius: 11px;
+        border: none;
+
+        background: #111;
+
+        color: white;
+
+        font-weight: 600;
+        font-size: 15px;
+
+        cursor: pointer;
+
+        transition: transform 0.25s ease, background-color 0.25s ease, box-shadow 0.25s ease;
+      }
+
+      .auth-submit:hover {
+        background: #292929;
+        transform: translateY(-1px);
+      }
+
+      /* OR */
+      .auth-or {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        color: #aaa;
+
+        font-size: 12px;
+
+        margin: 20px 0;
+      }
+
+      .auth-or::before,
+      .auth-or::after {
+        content: "";
+        height: 1px;
+        flex: 1;
+
+        background: #ddd;
+      }
+
+      /* TELEGRAM */
+      .telegram-btn {
+        width: 100%;
+
+        padding: 14px;
+
+        border: none;
+        border-radius: 11px;
+
+        background: #229ed9;
+        color: white;
+
+        font-size: 14px;
+        font-weight: 600;
+
+        cursor: pointer;
+
+        display: flex;
+        justify-content: center;
+        align-items: center;
+
+        gap: 9px;
+
+        transition: transform 0.25s ease, opacity 0.25s ease, background-color 0.25s ease;
+      }
+
+      .telegram-btn:hover {
+        transform: translateY(-1px);
+        opacity: 0.92;
+      }
+
+      .telegram-icon {
+        font-size: 19px;
+      }
+
+      /* VERIFY */
+      .telegram-verification {
+        display: none;
+      }
+
+      .telegram-verification.active {
+        display: block;
+      }
+
+      .verification-info {
+        padding: 13px;
+
+        background: #edf8fd;
+        border-radius: 10px;
+
+        font-size: 13px;
+        line-height: 1.5;
+
+        color: #35708a;
+
+        margin-bottom: 17px;
+      }
+
+      .verify-code {
+        text-align: center !important;
+
+        font-size: 22px !important;
+        letter-spacing: 7px;
+
+        font-weight: bold;
+      }
+
+      /* LOGIN BOTTOM */
+      .forgot-password {
+        display: block;
+
+        text-align: right;
+
+        margin-top: -5px;
+        margin-bottom: 18px;
+
+        text-decoration: none;
+
+        color: #555;
+
+        font-size: 13px;
+            transition: color 0.25s ease, opacity 0.25s ease;
+      }
+
+      .forgot-password:hover,
+      .forgot-password:focus-visible {
+            color: #111;
+            opacity: 0.9;
+          gap: 0;
+        }
+      }
+
+      .auth-messages {
+        margin-bottom: 18px;
+      }
+
+      .auth-message {
+        display: flex;
+        align-items: center;
+
+        gap: 10px;
+
+        padding: 13px 15px;
+
+        border-radius: 11px;
+
+        font-size: 13px;
+        font-weight: 600;
+
+        margin-bottom: 10px;
+      }
+
+      .auth-message.error {
+        color: #b42318;
+        background: #fef3f2;
+        border: 1px solid #fecdca;
+      }
+
+      .auth-message.success {
+        color: #067647;
+        background: #ecfdf3;
+        border: 1px solid #abefc6;
+      }
+
+      .status-icon {
+        min-width: 24px;
+        width: 24px;
+        height: 24px;
+
+        display: flex;
+        align-items: center;
+        justify-content: center;
+
+        border-radius: 50%;
+
+        font-weight: bold;
+      }
+
+      .auth-message.error .status-icon {
+        color: white;
+        background: #d92d20;
+      }
+
+      .auth-message.success .status-icon {
+        color: white;
+        background: #079455;
+      }
+    </style>
+
+    {% block extra_css %} {% endblock %}
+  </head>
+
+  <body>
+    <!--
+        HEADERINGDA SHUNI QO'YASAN
+    -->
+
+    <!-- =========================
+         REGISTER / LOGIN MODAL
+    ========================== -->
+
+    <div
+    class="auth-overlay {% if request.path == '/register/' %}active{% endif %}"
+    id="authOverlay">
+
+      <div class="auth-modal">
+        <button type="button" class="auth-close" id="closeAuth">×</button>
+
+        <div class="auth-header">
+          <div class="auth-logo">T</div>
+
+          <h2>TINCHLIK | MFY</h2>
+
+          <p>Tizimga kiring yoki yangi akkaunt yarating</p>
+        </div>
+
+        <!-- TABS -->
+
+        <div class="auth-tabs">
+          <button type="button" class="auth-tab {% if request.GET.tab != 'login' %}active{% endif %}" data-tab="register">
+            Ro'yxatdan o'tish
+        </button>
+
+          <button
+    type="button"
+    class="auth-tab {% if request.GET.tab == 'login' %}active{% endif %}"
+    data-tab="login">Kirish</button>
+        </div>
+
+        <!-- =========================
+                 REGISTER
+            ========================== -->
+
+        <form
+          class="auth-form {% if request.GET.tab != 'login' %}active{% endif %}"
+          id="registerForm"
+          method="POST"
+          action="/register/"
+        >
+          {% csrf_token %}
+
+          <div class="form-row">
+            <div class="input-box">
+              <label> Ism </label>
+
+              <input
+                type="text"
+                name="first_name"
+                placeholder="Ismingiz"
+                required
+              />
+            </div>
+
+            <div class="input-box">
+              <label> Familiya </label>
+
+              <input
+                type="text"
+                name="last_name"
+                placeholder="Familiyangiz"
+                required
+              />
+            </div>
+          </div>
+
+          <div class="input-box">
+            <label> Email </label>
+
+            <input
+              type="email"
+              name="email"
+              placeholder="example@gmail.com"
+              required
+            />
+          </div>
+
+          <div class="input-box">
+            <label> Parol </label>
+
+            <div class="password-box">
+              <input
+                type="password"
+                name="password1"
+                id="registerPassword1"
+                placeholder="Kamida 8 ta belgi"
+                required
+              />
+
+              <button
+                type="button"
+                class="show-password"
+                onclick="showPassword('registerPassword1')"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+
+          <div class="input-box">
+            <label> Parolni qayta yozing </label>
+
+            <div class="password-box">
+              <input
+                type="password"
+                name="password2"
+                id="registerPassword2"
+                placeholder="Parolni qayta kiriting"
+                required
+              />
+
+              <button
+                type="button"
+                class="show-password"
+                onclick="showPassword('registerPassword2')"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+
+          <label class="terms">
+            <input type="checkbox" name="terms" required />
+
+            <span>
+              Men
+              <a href="#"> foydalanish shartlari </a>
+              va
+              <a href="#"> maxfiylik siyosati </a>
+              ga roziman
+            </span>
+          </label>
+
+          <button type="submit" class="auth-submit">RO'YXATDAN O'TISH</button>
+
+          <div class="auth-or">YOKI</div>
+
+          <button type="button" class="telegram-btn" id="telegramRegister">
+            <span class="telegram-icon"> ✈ </span>
+
+            Telegram orqali ro'yxatdan o'tish
+          </button>
+        </form>
+
+        <!-- =========================
+                 LOGIN
+            ========================== -->
+
+        <form
+          class="auth-form {% if request.GET.tab == 'login' %}active{% endif %}"
+          id="loginForm"
+          method="POST"
+          action="/login/"
+        >
+          {% csrf_token %}
+
+          <div class="input-box">
+            <label> Email yoki login </label>
+
+            <input
+              type="text"
+              name="username"
+              placeholder="Email yoki login"
+              required
+            />
+          </div>
+
+          <div class="input-box">
+            <label> Parol </label>
+
+            <div class="password-box">
+              <input
+                type="password"
+                name="password"
+                id="loginPassword"
+                placeholder="Parolingiz"
+                required
+              />
+
+              <button
+                type="button"
+                class="show-password"
+                onclick="showPassword('loginPassword')"
+              >
+                👁
+              </button>
+            </div>
+          </div>
+
+          <a href="#" class="forgot-password"> Parolni unutdingizmi? </a>
+
+          <button type="submit" class="auth-submit">KIRISH</button>
+
+          <div class="auth-or">YOKI</div>
+
+          <button type="button" class="telegram-btn">
+            <span class="telegram-icon"> ✈ </span>
+
+            Telegram orqali kirish
+          </button>
+        </form>
+
+        <!-- =========================
+                 TELEGRAM VERIFICATION
+            ========================== -->
+
+        <div class="telegram-verification" id="telegramVerification">
+          <div class="verification-info">
+            Telegramdagi
+            <strong> TINCHLIK | MFY Verification </strong>
+            botiga yuborilgan tasdiqlash kodini kiriting.
+          </div>
+
+          <div class="input-box">
+            <label> Telefon raqam </label>
+
+            <input
+              type="tel"
+              id="telegramPhone"
+              placeholder="+998 90 123 45 67"
+            />
+          </div>
+
+          <button type="button" class="telegram-btn" id="sendTelegramCode">
+            ✈ Tasdiqlash kodini yuborish
+          </button>
+
+          <div style="height: 15px"></div>
+
+          <div class="input-box">
+            <label> Tasdiqlash kodi </label>
+
+            <input
+              type="text"
+              id="telegramCode"
+              class="verify-code"
+              maxlength="6"
+              placeholder="000000"
+            />
+          </div>
+
+          <button type="button" class="auth-submit" id="verifyTelegramCode">
+            TASDIQLASH
+          </button>
+        </div>
+      </div>
+    </div>
+
+    {% if messages %}
+
+    <div class="auth-messages">
+      {% for message in messages %}
+      {# Hide raw Telegram deep-link messages (https://t.me/...) — handled by page-level buttons instead #}
+      {% if "https://t.me/" not in message %}
+        <div class="auth-message {{ message.tags }}">
+          {% if message.tags == "success" %}
+            <span class="status-icon">✓</span>
+          {% else %}
+            <span class="status-icon">!</span>
+          {% endif %}
+
+          <span> {{ message }} </span>
+        </div>
+      {% endif %}
+    {% endfor %}
+    </div>
+
+    {% endif %}
+
+    <!-- SAHIFALAR SHU YERGA KELADI -->
+
+    {% block content %} {% endblock %}
+
+    <script>
+      const overlay = document.getElementById("authOverlay");
+      const closeAuth = document.getElementById("closeAuth");
+
+      const tabs = document.querySelectorAll(".auth-tab");
+
+      const registerForm = document.getElementById("registerForm");
+
+      const loginForm = document.getElementById("loginForm");
+
+      const telegramVerification = document.getElementById(
+        "telegramVerification",
+      );
+
+      /*
+    =============================
+    KIRISH BOSILGANDA
+    URL -> /register/
+    =============================
+    */
+
+      function openRegister() {
+        overlay.classList.add("active");
+
+        registerForm.classList.add("active");
+        loginForm.classList.remove("active");
+
+        telegramVerification.classList.remove("active");
+
+        tabs[0].classList.add("active");
+        tabs[1].classList.remove("active");
+
+        document.body.style.overflow = "hidden";
+      }
+
+      function openLogin() {
+        overlay.classList.add("active");
+
+        registerForm.classList.remove("active");
+        loginForm.classList.add("active");
+
+        telegramVerification.classList.remove("active");
+
+        tabs[0].classList.remove("active");
+        tabs[1].classList.add("active");
+
+        document.body.style.overflow = "hidden";
+      }
+
+      /*
+    =============================
+    MODAL CLOSE
+    =============================
+    */
+
+      closeAuth.addEventListener("click", closeModal);
+
+      function closeModal() {
+        overlay.classList.remove("active");
+
+        document.body.style.overflow = "";
+
+        window.location.href = "/";
+      }
+
+      /*
+    =============================
+    OUTSIDE CLICK
+    =============================
+    */
+
+      overlay.addEventListener("click", function (e) {
+        if (e.target === overlay) {
+          closeModal();
+        }
+      });
+
+      /*
+    =============================
+    TABS
+    =============================
+    */
+
+      tabs.forEach((tab) => {
+        tab.addEventListener("click", function () {
+          const selectedTab = this.dataset.tab;
+
+          if (selectedTab === "login") {
+            openLogin();
+          } else {
+            openRegister();
+          }
+        });
+      });
+
+      /*
+    =============================
+    PASSWORD SHOW
+    =============================
+    */
+
+      function showPassword(id) {
+        const input = document.getElementById(id);
+
+        if (input.type === "password") {
+          input.type = "text";
+        } else {
+          input.type = "password";
+        }
+      }
+
+      /*
+    =============================
+    TELEGRAM REGISTER
+    =============================
+    */
+
+      document
+        .getElementById("telegramRegister")
+        .addEventListener("click", function () {
+          registerForm.classList.remove("active");
+          loginForm.classList.remove("active");
+
+          telegramVerification.classList.add("active");
+        });
+
+      /*
+    =============================
+    SEND TELEGRAM CODE
+    =============================
+    */
+
+      document
+        .getElementById("sendTelegramCode")
+        .addEventListener("click", function () {
+          const phone = document.getElementById("telegramPhone").value;
+
+          if (!phone) {
+            alert("Telefon raqamingizni kiriting!");
+
+            return;
+          }
+
+          /*
+                KEYIN DJANGO BACKEND:
+
+                fetch("/api/telegram/send-code/", {
+                    method: "POST"
+                })
+
+                orqali botga:
+
+                Sizning tasdiqlash kodingiz: 482193
+
+                yuboramiz.
+            */
+
+          alert("Tasdiqlash kodi Telegram orqali yuboriladi.");
+        });
+
+      /*
+    =============================
+    VERIFY TELEGRAM CODE
+    =============================
+    */
+
+      document
+        .getElementById("verifyTelegramCode")
+        .addEventListener("click", function () {
+          const code = document.getElementById("telegramCode").value;
+
+          if (code.length !== 6) {
+            alert("6 xonali tasdiqlash kodini kiriting!");
+
+            return;
+          }
+
+          /*
+                KEYIN DJANGO:
+                /api/telegram/verify-code/
+            */
+        });
+
+      /*
+    =============================
+    AGAR URL /register/
+    BO'LSA MODAL O'ZI OCHILADI
+    =============================
+    */
+
+      window.addEventListener("DOMContentLoaded", function () {
+        const path = window.location.pathname;
+        const params = new URLSearchParams(window.location.search);
+
+        if (path === "/register/" || path === "/register") {
+          if (params.get("tab") === "login") {
+            openLogin();
+          } else {
+            openRegister();
+          }
+        }
+      });
+
+      /*
+    BACK BUTTON
+    */
+
+      window.addEventListener("popstate", function () {
+        if (
+          window.location.pathname === "/register/" ||
+          window.location.pathname === "/register"
+        ) {
+          openRegister();
+        } else {
+          overlay.classList.remove("active");
+          document.body.style.overflow = "";
+        }
+      });
+    </script>
+
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+
+    <script src="{% static 'js/theme.js' %}"></script>
+
+    {% block extra_js %} {% endblock %}
+  </body>
+</html>

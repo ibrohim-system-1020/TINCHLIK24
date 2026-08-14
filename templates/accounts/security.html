@@ -1,0 +1,682 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="security-page">
+  <div class="security-shell">
+    <aside class="security-sidebar">
+      <div class="brand-header">
+        <div class="brand-title">TINCHLIK | MFY</div>
+        <div class="brand-subtitle">Shaxsiy boshqaruv paneli</div>
+      </div>
+
+      <nav class="profile-nav">
+        <a href="/" class="nav-item">🏠 Bosh sahifa</a>
+        <a href="{% url 'accounts:profile' %}" class="nav-item">👤 Profil</a>
+        <a href="{% url 'accounts:security' %}" class="nav-item active">🔐 Xavfsizlik</a>
+        <a href="#login-history" class="nav-item">🕘 Kirishlar tarixi</a>
+        <a href="{% url 'accounts:logout' %}" class="nav-item">🚪 Chiqish</a>
+      </nav>
+    </aside>
+
+    <main class="security-content">
+      <div class="security-header">
+        <div>
+          <p class="section-label">Xavfsizlik</p>
+          <h1>Xavfsizlik boshqaruvi</h1>
+          <p class="section-note">Hisobingiz xavfsizligi va kirish sozlamalarini boshqaring</p>
+        </div>
+
+        <div class="user-summary-card">
+          <div class="avatar-shell">
+            {% if profile_user.telegram_photo_url %}
+              <img src="{{ profile_user.telegram_photo_url }}" alt="Profil rasmi" class="avatar-img" />
+            {% else %}
+              <div class="avatar-fallback">{{ profile_user.first_name|default:'?'|slice:':1'|upper }}</div>
+            {% endif %}
+          </div>
+          <div>
+            <p class="meta-label">Siz</p>
+            <h2>{{ profile_user.first_name|default:'Foydalanuvchi' }}</h2>
+            <span class="status-badge {% if profile_user.is_phone_verified %}badge-success{% else %}badge-warning{% endif %}">
+              {% if profile_user.is_phone_verified %}
+                ✅ Tasdiqlangan
+              {% else %}
+                ⚠️ Tasdiqlanmagan
+              {% endif %}
+            </span>
+          </div>
+        </div>
+      </div>
+
+      <div class="security-grid">
+        <section class="card score-card">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Hisob xavfsizligi</p>
+              <h2>Hisob holati</h2>
+            </div>
+            <span class="status-chip status-safe">Premium</span>
+          </div>
+
+          <div class="score-summary">
+            <div class="score-value">85<span>%</span></div>
+            <p>Hisobingiz zaif nuqtalari yo‘q, lekin xavfsizlikni muntazam tekshiring.</p>
+          </div>
+
+          <div class="progress-bar">
+            <div class="progress-fill"></div>
+          </div>
+
+          <div class="security-metrics">
+            <div class="metric-item">
+              <div>
+                <p class="metric-title">Parol o‘rnatilgan</p>
+                <p class="metric-note">Kuchli parol ishlatilgan</p>
+              </div>
+              <span class="metric-status success">✅ Yoqilgan</span>
+            </div>
+            <div class="metric-item">
+              <div>
+                <p class="metric-title">Telegram bog‘langan</p>
+                <p class="metric-note">Telegram orqali hisobni tekshiring</p>
+              </div>
+              <span class="metric-status {% if profile_user.telegram_id %}success{% else %}warning{% endif %}">
+                {% if profile_user.telegram_id %}✅ Yoqilgan{% else %}⚠️ Sozlash kerak{% endif %}
+              </span>
+            </div>
+            <div class="metric-item">
+              <div>
+                <p class="metric-title">Telefon tasdiqlangan</p>
+                <p class="metric-note">SMS yoki Telegram orqali tasdiqlash</p>
+              </div>
+              <span class="metric-status {% if profile_user.is_phone_verified %}success{% else %}warning{% endif %}">
+                {% if profile_user.is_phone_verified %}✅ Yoqilgan{% else %}⚠️ Sozlash kerak{% endif %}
+              </span>
+            </div>
+          </div>
+        </section>
+
+        <section class="card action-card">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Parol</p>
+              <h2>Kirish parolini yangilang</h2>
+            </div>
+          </div>
+          <p class="card-note">Hisobingiz uchun kuchli va noyob paroldan foydalaning.</p>
+          <button type="button" class="action-button disabled">
+            Tez orada
+            <span class="button-badge">Soon</span>
+          </button>
+        </section>
+
+        <section class="card action-card">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Telegram</p>
+              <h2>Telegram xavfsizligi</h2>
+            </div>
+          </div>
+          <p class="card-note">Telegram orqali hisob bilan bog‘lanish sahifangizni tekshiring.</p>
+          <div class="status-row">
+            <span class="status-label">{% if profile_user.telegram_id %}✅ Telegram ulangan{% else %}⚠️ Telegram ulanmagan{% endif %}</span>
+            {% if profile_user.telegram_username %}
+              <span class="status-meta">@{{ profile_user.telegram_username }}</span>
+            {% endif %}
+          </div>
+          {% if profile_user.telegram_id %}
+          <div class="info-row">
+            <span>Ulangan Telegram</span>
+            <span class="info-value">@{{ profile_user.telegram_username|default:'Anonim' }}</span>
+          </div>
+          {% endif %}
+        </section>
+
+        <section class="card action-card">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Telefon tasdiqlash</p>
+              <h2>Telefon nazorati</h2>
+            </div>
+          </div>
+          <p class="card-note">Hisobga bog‘langan telefonni himoya qiling.</p>
+          <div class="status-row">
+            <span class="status-label">{% if profile_user.is_phone_verified %}✅ Tasdiqlangan{% else %}⚠️ Tasdiqlanmagan{% endif %}</span>
+          </div>
+          <div class="info-row">
+            <span>Telefon</span>
+            <span class="info-value">{{ profile_user.telefon|default:'Maʼlumot mavjud emas' }}</span>
+          </div>
+        </section>
+
+        <section class="card info-card">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Hisob ma’lumotlari</p>
+              <h2>Account overview</h2>
+            </div>
+          </div>
+          <div class="info-grid">
+            <div class="info-item">
+              <span>Email</span>
+              <strong>{{ profile_user.email }}</strong>
+            </div>
+            <div class="info-item">
+              <span>Ro‘yxatdan o‘tgan sana</span>
+              <strong>{{ profile_user.date_joined|date:'d.m.Y H:i' }}</strong>
+            </div>
+            <div class="info-item">
+              <span>Oxirgi login</span>
+              <strong>{% if profile_user.last_login %}{{ profile_user.last_login|date:'d.m.Y H:i' }}{% else %}Hali mavjud emas{% endif %}</strong>
+            </div>
+            <div class="info-item">
+              <span>Account holati</span>
+              <strong>{% if profile_user.is_active %}Faol{% else %}Faol emas{% endif %}</strong>
+            </div>
+          </div>
+        </section>
+      </div>
+
+      <section class="card danger-card">
+        <div class="card-title">
+          <div>
+            <p class="section-label">Xavfli amallar</p>
+            <h2>Hisob xavfsizligi</h2>
+          </div>
+        </div>
+        <p class="card-note">Quyidagi amal jiddiy hisoblanadi. Faqat kerak bo‘lganda ishlating.</p>
+
+        <div class="danger-actions">
+          <a href="{% url 'accounts:logout' %}" class="danger-button">🚪 Hisobdan chiqish</a>
+          <button type="button" class="danger-button disabled">Hisobni o‘chirish <span class="button-badge">Tez orada</span></button>
+        </div>
+      </section>
+    </main>
+  </div>
+</section>
+{% endblock %}
+
+{% block extra_css %}
+<style>
+  :root {
+    --bg: #f6f7f9;
+    --surface: #ffffff;
+    --surface-strong: #f4f5f7;
+    --text: #111827;
+    --muted: #5f687b;
+    --border: rgba(17, 24, 39, 0.08);
+    --success: #166534;
+    --warning: #a16207;
+    --accent: #111111;
+    --shadow: 0 24px 60px rgba(17, 24, 39, 0.08);
+  }
+
+  .security-page {
+    min-height: calc(100vh - 0px);
+    background: var(--bg);
+    padding: 30px 20px;
+  }
+
+  .security-shell {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 28px;
+  }
+
+  .security-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .brand-header {
+    padding: 28px;
+    border-radius: 28px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    margin-bottom: 8px;
+  }
+
+  .brand-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+    line-height: 1.6;
+  }
+
+  .profile-nav {
+    display: grid;
+    gap: 12px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 16px 18px;
+    border-radius: 22px;
+    background: var(--surface);
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.06);
+    transition: transform 0.15s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  }
+
+  .nav-item:hover,
+  .nav-item:focus-visible,
+  .nav-item.active {
+    background: #111111;
+    color: #ffffff;
+    transform: translateY(-1px);
+    box-shadow: 0 18px 36px rgba(17, 24, 39, 0.12);
+  }
+
+  .security-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .security-header {
+    display: flex;
+    justify-content: space-between;
+    gap: 20px;
+    align-items: center;
+    padding: 28px 30px;
+    border-radius: 32px;
+    background: var(--surface);
+    box-shadow: var(--shadow);
+  }
+
+  .security-header h1 {
+    font-size: clamp(2rem, 2.4vw, 2.6rem);
+    letter-spacing: -0.04em;
+    margin: 12px 0 10px;
+  }
+
+  .section-label {
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.18em;
+    margin-bottom: 10px;
+  }
+
+  .section-note {
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.8;
+  }
+
+  .user-summary-card {
+    display: flex;
+    gap: 16px;
+    align-items: center;
+    padding: 18px 22px;
+    border-radius: 26px;
+    background: var(--surface-strong);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+  }
+
+  .avatar-shell {
+    width: 76px;
+    height: 76px;
+    border-radius: 22px;
+    overflow: hidden;
+    background: #111111;
+    display: grid;
+    place-items: center;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-fallback {
+    color: #ffffff;
+    font-size: 28px;
+    font-weight: 700;
+  }
+
+  .status-badge {
+    display: inline-flex;
+    padding: 10px 16px;
+    border-radius: 999px;
+    font-weight: 700;
+    margin-top: 4px;
+  }
+
+  .badge-success {
+    background: #ecfdf5;
+    color: var(--success);
+  }
+
+  .badge-warning {
+    background: #fff7ed;
+    color: var(--warning);
+  }
+
+  .security-grid {
+    display: grid;
+    gap: 24px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .card {
+    background: var(--surface);
+    border-radius: 28px;
+    padding: 28px;
+    box-shadow: var(--shadow);
+    border: 1px solid rgba(17, 24, 39, 0.05);
+  }
+
+  .score-card {
+    grid-column: span 2;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+    margin-bottom: 20px;
+  }
+
+  .card-title h2 {
+    font-size: 1.5rem;
+    margin: 8px 0 0;
+  }
+
+  .status-chip {
+    padding: 10px 16px;
+    border-radius: 999px;
+    background: #111111;
+    color: #ffffff;
+    font-size: 0.9rem;
+    font-weight: 700;
+  }
+
+  .score-summary {
+    display: flex;
+    align-items: center;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+
+  .score-value {
+    font-size: clamp(2.5rem, 4vw, 4.25rem);
+    font-weight: 800;
+    color: var(--accent);
+    line-height: 1;
+  }
+
+  .score-summary p {
+    color: var(--muted);
+    max-width: 540px;
+    line-height: 1.8;
+  }
+
+  .progress-bar {
+    height: 14px;
+    border-radius: 999px;
+    background: #e7ecf4;
+    overflow: hidden;
+    margin: 24px 0;
+  }
+
+  .progress-fill {
+    width: 85%;
+    height: 100%;
+    border-radius: 999px;
+    background: linear-gradient(90deg, #111111 0%, #575757 100%);
+  }
+
+  .security-metrics {
+    display: grid;
+    gap: 16px;
+  }
+
+  .metric-item {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 18px 20px;
+    border-radius: 24px;
+    background: var(--surface-strong);
+  }
+
+  .metric-title {
+    font-weight: 700;
+    margin-bottom: 6px;
+  }
+
+  .metric-note {
+    color: var(--muted);
+    font-size: 0.95rem;
+    line-height: 1.7;
+  }
+
+  .metric-status {
+    align-self: center;
+    font-weight: 700;
+  }
+
+  .metric-status.success {
+    color: var(--success);
+  }
+
+  .metric-status.warning {
+    color: var(--warning);
+  }
+
+  .action-card {
+    min-height: 220px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+  }
+
+  .card-note {
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 20px;
+  }
+
+  .action-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    padding: 16px 22px;
+    border-radius: 20px;
+    border: none;
+    background: #111111;
+    color: #ffffff;
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.25s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .action-button:hover,
+  .action-button:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(17, 24, 39, 0.1);
+  }
+
+  .action-button.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+    background: #d1d5db;
+  }
+
+  .button-badge {
+    background: rgba(255, 255, 255, 0.15);
+    padding: 6px 10px;
+    border-radius: 999px;
+    font-size: 0.85rem;
+  }
+
+  .status-row {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    padding: 16px 0;
+  }
+
+  .status-label {
+    font-weight: 700;
+  }
+
+  .status-meta {
+    color: var(--muted);
+  }
+
+  .info-row {
+    display: flex;
+    justify-content: space-between;
+    gap: 16px;
+    padding: 16px 18px;
+    border-radius: 20px;
+    background: var(--surface-strong);
+    margin-top: 14px;
+  }
+
+  .info-row span:first-child {
+    color: var(--muted);
+  }
+
+  .info-value {
+    font-weight: 700;
+  }
+
+  .info-card .info-grid {
+    display: grid;
+    gap: 16px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .info-item {
+    padding: 18px 20px;
+    border-radius: 22px;
+    background: var(--surface-strong);
+  }
+
+  .info-item span {
+    display: block;
+    color: var(--muted);
+    margin-bottom: 10px;
+    font-size: 0.95rem;
+  }
+
+  .info-item strong {
+    display: block;
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  .danger-card {
+    grid-column: span 2;
+    background: #fff4f2;
+    border-color: rgba(244, 214, 207, 0.8);
+  }
+
+  .danger-actions {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 14px;
+    margin-top: 24px;
+  }
+
+  .danger-button {
+    padding: 16px 24px;
+    border-radius: 20px;
+    border: none;
+    font-weight: 700;
+    cursor: pointer;
+    min-width: 220px;
+    text-align: center;
+    transition: transform 0.25s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+  }
+
+  .danger-button:hover,
+  .danger-button:focus-visible {
+    transform: translateY(-1px);
+    box-shadow: 0 16px 28px rgba(17, 24, 39, 0.08);
+  }
+
+  .danger-button:first-child {
+    background: #111111;
+    color: #ffffff;
+  }
+
+  .danger-button.disabled {
+    background: #f3f4f6;
+    color: #6b7280;
+    cursor: not-allowed;
+  }
+
+  @media (max-width: 1180px) {
+    .security-shell {
+      grid-template-columns: 1fr;
+    }
+
+    .security-grid {
+      grid-template-columns: 1fr;
+    }
+
+    .score-card {
+      grid-column: auto;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .security-page {
+      padding: 20px 14px;
+    }
+
+    .security-header {
+      flex-direction: column;
+    }
+
+    .profile-nav {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .nav-item {
+      padding: 14px 16px;
+    }
+
+    .info-card .info-grid {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 520px) {
+    .security-header,
+    .brand-header,
+    .card {
+      padding: 22px;
+    }
+
+    .nav-item {
+      border-radius: 20px;
+      padding: 14px;
+    }
+
+    .security-header h1 {
+      font-size: 1.8rem;
+    }
+
+    .security-grid {
+      gap: 18px;
+    }
+  }
+</style>
+{% endblock %}

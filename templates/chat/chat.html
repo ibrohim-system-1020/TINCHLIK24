@@ -1,0 +1,44 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block content %}
+<link rel="stylesheet" href="{% static 'css/chat.css' %}" />
+
+<div class="chat-page">
+  <div class="chat-shell">
+    <header class="chat-header">
+      <div>
+        <p class="chat-label">Global chat</p>
+        <h1>TINCHLIK global</h1>
+      </div>
+      <div class="chat-online-wrap">
+        <span class="online-dot"></span>
+        <span id="online-count">0 online</span>
+      </div>
+    </header>
+
+    <div id="chat-messages" class="chat-messages" aria-live="polite"></div>
+
+    <div id="empty-chat" class="empty-chat hidden">
+      <p>Hozircha xabarlar yo'q.</p>
+      <span>Birinchi bo'lib xabar yozing.</span>
+    </div>
+
+    <div id="typing-indicator" class="typing-indicator hidden" aria-live="polite"></div>
+
+    <form id="chat-form" class="chat-composer" autocomplete="off">
+      <div id="reply-preview" class="reply-preview hidden"></div>
+      <div class="composer-row">
+        <button type="button" id="image-button" class="icon-button" aria-label="Rasm yuborish">🖼️</button>
+        <button type="button" id="audio-button" class="icon-button" aria-label="Ovozli xabar">🎙️</button>
+        <input id="chat-input" type="text" maxlength="2000" placeholder="Xabar yozing..." aria-label="Xabar matni" />
+        <button type="submit" class="send-button">Yuborish</button>
+      </div>
+      <input id="image-input" type="file" accept="image/*" class="hidden" />
+      <input id="audio-input" type="file" accept="audio/*" class="hidden" />
+    </form>
+  </div>
+</div>
+
+<script src="{% static 'js/chat.js' %}"></script>
+{% endblock %}

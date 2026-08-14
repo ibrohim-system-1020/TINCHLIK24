@@ -1,0 +1,422 @@
+{% extends 'base.html' %}
+
+{% block content %}
+<section class="profile-page">
+  <div class="profile-shell animate-up">
+    <aside class="profile-sidebar animate-left">
+      <div class="brand-header animate-down">
+        <div class="brand-title">TINCHLIK | MFY</div>
+        <div class="brand-subtitle">Shaxsiy boshqaruv paneli</div>
+      </div>
+
+      <div class="profile-nav animate-up">
+        <a href="/" class="nav-item animate-left">🏠 Bosh sahifa</a>
+        <a href="/profile/" class="nav-item active animate-left">👤 Profil</a>
+        <a href="{% url 'accounts:security' %}" class="nav-item animate-left">🔐 Xavfsizlik</a>
+        <a href="#history" class="nav-item animate-left">🕘 Kirishlar tarixi</a>
+        <a href="/logout/" class="nav-item animate-left">🚪 Chiqish</a>
+      </div>
+    </aside>
+
+    <main class="profile-content">
+      <div class="profile-header animate-left">
+        <div>
+          <p class="section-label">Foydalanuvchi</p>
+          <h1>{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
+          <p class="section-note">Sizning shaxsiy profilingiz va hisob ma'lumotlaringiz</p>
+        </div>
+        <div class="profile-badge {% if profile_user.is_phone_verified %}badge-success{% else %}badge-warning{% endif %} animate-right">
+          {% if profile_user.is_phone_verified %}
+            ✅ Tasdiqlangan
+          {% else %}
+            ⚠️ Tasdiqlanmagan
+          {% endif %}
+        </div>
+      </div>
+
+      <div class="profile-grid animate-up">
+        {% if is_admin %}
+        <section class="card admin-card animate-up">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Admin boshqaruvi</p>
+              <h2>Administrator paneli</h2>
+            </div>
+          </div>
+          <div class="admin-actions">
+            <a href="/admin/" class="admin-action-link">Django admin paneli</a>
+            <a href="/admin/" class="admin-action-link secondary">Foydalanuvchilar va audit log</a>
+          </div>
+        </section>
+        {% endif %}
+
+        <section class="card profile-card animate-up">
+          <div class="card-top">
+            <div class="avatar-shell">
+              {% if profile_user.profile_photo_url %}
+                <img src="{{ profile_user.profile_photo_url }}" alt="Profil rasmi" class="avatar-img" />
+              {% else %}
+                <div class="avatar-fallback">{{ profile_user.first_name|default:'?'|slice:':1' }}{{ profile_user.last_name|default:'?'|slice:':1' }}</div>
+              {% endif %}
+            </div>
+            <div>
+              <p class="meta-label">Profil ma'lumotlari</p>
+              <h2>{{ profile_user.full_name|default:profile_user.email }}</h2>
+              <p class="meta-note">{{ profile_user.email }}</p>
+            </div>
+          </div>
+
+          <div class="detail-list">
+            <div class="detail-item"><span>Ism:</span> {{ profile_user.first_name|default:'-' }}</div>
+            <div class="detail-item"><span>Familiya:</span> {{ profile_user.last_name|default:'-' }}</div>
+            <div class="detail-item"><span>Email:</span> {{ profile_user.email }}</div>
+            <div class="detail-item"><span>Telefon:</span> {{ profile_user.telefon|default:'-' }}</div>
+            <div class="detail-item"><span>Account ID:</span> {{ profile_user.id }}</div>
+            <div class="detail-item"><span>Telegram username:</span> {{ profile_user.telegram_username|default:'-' }}</div>
+            <div class="detail-item"><span>Telegram ID:</span> {{ profile_user.telegram_id|default:'-' }}</div>
+            <div class="detail-item"><span>Ro'yxatdan o'tgan sana:</span> {{ profile_user.date_joined|date:'Y-m-d H:i' }}</div>
+            <div class="detail-item"><span>Oxirgi login:</span> {{ profile_user.last_login|default:'—'|date:'Y-m-d H:i' }}</div>
+          </div>
+        </section>
+
+        <section class="card history-card animate-right" id="history">
+          <div class="card-title">
+            <div>
+              <p class="section-label">Kirishlar tarixi</p>
+              <h2>Oxirgi 10 ta kirish</h2>
+            </div>
+          </div>
+
+          <div class="history-table-wrap">
+            {% if history %}
+            <table class="history-table">
+              <thead>
+                <tr>
+                  <th>Vaqt</th>
+                  <th>IP address</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for item in history %}
+                <tr>
+                  <td>{{ item.logged_in_at|date:'Y-m-d H:i' }}</td>
+                  <td>{{ item.ip_address|default:'–' }}</td>
+                </tr>
+                {% endfor %}
+              </tbody>
+            </table>
+            {% else %}
+            <div class="empty-state">Hozircha kirishlar mavjud emas.</div>
+            {% endif %}
+          </div>
+        </section>
+      </div>
+    </main>
+  </div>
+</section>
+
+<style>
+  .profile-page {
+    padding: 32px 20px;
+    min-height: calc(100vh - 0px);
+    background: var(--bg);
+  }
+
+  .profile-shell {
+    display: grid;
+    grid-template-columns: 280px 1fr;
+    gap: 28px;
+    max-width: 1300px;
+    margin: 0 auto;
+  }
+
+  .profile-sidebar {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .brand-header {
+    padding: 26px;
+    border-radius: 24px;
+    background: var(--panel-bg);
+    box-shadow: var(--shadow);
+  }
+
+  .brand-title {
+    font-size: 18px;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    margin-bottom: 6px;
+  }
+
+  .brand-subtitle {
+    color: var(--muted);
+    font-size: 14px;
+  }
+
+  .profile-nav {
+    display: grid;
+    gap: 10px;
+  }
+
+  .nav-item {
+    display: block;
+    padding: 16px 18px;
+    border-radius: 18px;
+    background: var(--panel-bg);
+    color: var(--text);
+    text-decoration: none;
+    box-shadow: 0 14px 30px rgba(32, 40, 51, 0.05);
+    transition: transform 0.25s ease, background-color 0.3s ease, box-shadow 0.3s ease, color 0.3s ease;
+  }
+
+  .nav-item:hover,
+  .nav-item:focus-visible,
+  .nav-item.active {
+    background: var(--button-bg);
+    color: var(--button-text);
+    transform: translateY(-1px);
+    box-shadow: 0 18px 36px rgba(17, 24, 39, 0.12);
+  }
+
+  .profile-content {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+  }
+
+  .profile-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 24px;
+  }
+
+  .section-label {
+    color: var(--muted);
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.16em;
+    margin-bottom: 8px;
+  }
+
+  .section-note {
+    color: var(--muted);
+    margin-top: 10px;
+  }
+
+  .profile-badge {
+    padding: 12px 18px;
+    border-radius: 999px;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .badge-success {
+    background: #e8f8ef;
+    color: #166534;
+  }
+
+  .badge-warning {
+    background: #fffaeb;
+    color: #854d0e;
+  }
+
+  .profile-grid {
+    display: grid;
+    gap: 24px;
+  }
+
+  .card {
+    background: #ffffff;
+    border-radius: 30px;
+    padding: 28px;
+    box-shadow: 0 24px 50px rgba(31, 44, 66, 0.08);
+    transition: transform 0.25s ease, box-shadow 0.3s ease, background-color 0.3s ease;
+  }
+
+  .card-top {
+    display: flex;
+    align-items: center;
+    gap: 18px;
+    margin-bottom: 26px;
+  }
+
+  .card:hover,
+  .card:focus-within {
+    transform: translateY(-3px);
+    box-shadow: 0 28px 56px rgba(31, 44, 66, 0.12);
+  }
+
+  .avatar-shell {
+    width: 90px;
+    height: 90px;
+    border-radius: 24px;
+    overflow: hidden;
+    background: #111111;
+    display: grid;
+    place-items: center;
+  }
+
+  .avatar-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .avatar-fallback {
+    color: #ffffff;
+    font-size: 30px;
+    font-weight: 700;
+  }
+
+  .meta-label {
+    color: #7a869a;
+    margin-bottom: 8px;
+    font-size: 14px;
+  }
+
+  .meta-note {
+    color: #5f687b;
+    margin-top: 4px;
+  }
+
+  .detail-list {
+    display: grid;
+    gap: 14px;
+  }
+
+  .detail-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 18px;
+    background: #f7f8fb;
+    border-radius: 16px;
+    font-size: 15px;
+    color: #343f52;
+    transition: transform 0.15s ease, background-color 0.18s ease;
+  }
+
+  .detail-item:hover {
+    transform: translateX(3px);
+    background: #eef2ff;
+  }
+
+  .detail-item span {
+    color: #7a869a;
+  }
+
+  .admin-card {
+    border: 1px solid rgba(37, 99, 235, 0.12);
+  }
+
+  .admin-actions {
+    display: grid;
+    gap: 12px;
+    margin-top: 12px;
+  }
+
+  .admin-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 16px;
+    border-radius: 14px;
+    background: var(--button-bg);
+    color: var(--button-text);
+    text-decoration: none;
+    font-weight: 700;
+    transition: transform 0.2s ease, opacity 0.2s ease;
+  }
+
+  .admin-action-link.secondary {
+    background: #eff6ff;
+    color: #1e3a8a;
+  }
+
+  .admin-action-link:hover,
+  .admin-action-link:focus-visible {
+    transform: translateY(-1px);
+    opacity: 0.96;
+  }
+
+  .history-card {
+    overflow: hidden;
+  }
+
+  .card-title {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    margin-bottom: 18px;
+  }
+
+  .history-table-wrap {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    min-width: 520px;
+  }
+
+  .history-table th,
+  .history-table td {
+    text-align: left;
+    padding: 16px 18px;
+  }
+
+  .history-table th {
+    font-size: 13px;
+    text-transform: uppercase;
+    letter-spacing: 0.14em;
+    color: #7a869a;
+    border-bottom: 1px solid #e6e9ef;
+  }
+
+  .history-table tr {
+    border-bottom: 1px solid #f1f3f7;
+  }
+
+  .history-table tr:last-child {
+    border-bottom: none;
+  }
+
+  .history-table td {
+    color: #2a3340;
+  }
+
+  .empty-state {
+    padding: 24px;
+    border-radius: 20px;
+    background: #f9fbff;
+    color: #5f687b;
+  }
+
+  @media (max-width: 980px) {
+    .profile-shell {
+      grid-template-columns: 1fr;
+    }
+  }
+
+  @media (max-width: 640px) {
+    .profile-page {
+      padding: 18px 14px;
+    }
+
+    .profile-header {
+      flex-direction: column;
+      align-items: stretch;
+    }
+
+    .card {
+      padding: 22px;
+    }
+  }
+</style>
+{% endblock %}

@@ -1,0 +1,206 @@
+:root {
+  color-scheme: light;
+  --bg: #f5f7fb;
+  --surface: #ffffff;
+  --surface-strong: #f6f7fb;
+  --text: #111827;
+  --muted: #6b7280;
+  --border: rgba(17, 24, 39, 0.08);
+  --brand: #2f6fed;
+  --highlight: #229ed9;
+  --shadow: 0 24px 60px rgba(17, 24, 39, 0.08);
+  --button-bg: #111111;
+  --button-text: #ffffff;
+  --panel-bg: #ffffff;
+  --panel-border: rgba(17, 24, 39, 0.08);
+  --overlay: rgba(0, 0, 0, 0.55);
+}
+
+html[data-theme="dark"] {
+  color-scheme: dark;
+  --bg: #0f172a;
+  --surface: #111827;
+  --surface-strong: #1f2937;
+  --text: #f8fafc;
+  --muted: #94a3b8;
+  --border: rgba(148, 163, 184, 0.18);
+  --brand: #60a5fa;
+  --highlight: #38bdf8;
+  --shadow: 0 24px 60px rgba(0, 0, 0, 0.5);
+  --button-bg: #334155;
+  --button-text: #f8fafc;
+  --panel-bg: #111827;
+  --panel-border: rgba(148, 163, 184, 0.18);
+  --overlay: rgba(15, 23, 42, 0.65);
+}
+
+body {
+  background: var(--bg);
+  color: var(--text);
+  transition: background-color 0.18s ease, color 0.18s ease;
+}
+
+button.theme-toggle {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 100000;
+  padding: 12px 14px;
+  border: none;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.92);
+  color: var(--text);
+  cursor: pointer;
+  font-size: 16px;
+  box-shadow: 0 18px 40px rgba(17, 24, 39, 0.14);
+  transition: transform 0.15s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
+  backdrop-filter: blur(10px);
+}
+
+html[data-theme="dark"] button.theme-toggle {
+  background: rgba(15, 23, 42, 0.92);
+}
+
+button.theme-toggle:hover {
+  transform: translateY(-2px);
+}
+button,
+a,
+input,
+select,
+textarea,
+.card,
+.nav-item,
+.status-badge,
+.profile-badge,
+.detail-item,
+.auth-modal,
+.auth-tab,
+.auth-close,
+.auth-submit,
+.telegram-btn,
+.show-password,
+.action-button,
+.danger-button,
+.const-box-small,
+.const-box-big,
+.logo,
+.register,
+.list li a,
+.profile-shell,
+.security-shell,
+.hero-card,
+.telegram-card {
+  transition:
+    transform 0.15s ease,
+    opacity 0.15s ease,
+    background-color 0.18s ease,
+    color 0.18s ease,
+    border-color 0.18s ease,
+    box-shadow 0.18s ease;
+}
+.hero-card,
+.auth-modal,
+.profile-shell,
+.security-shell,
+.telegram-card {
+  transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+@keyframes fadeInUp {
+  0% {
+    opacity: 0;
+    transform: translateY(35px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInDown {
+  0% {
+    opacity: 0;
+    transform: translateY(-35px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@keyframes fadeInLeft {
+  0% {
+    opacity: 0;
+    transform: translateX(-40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInRight {
+  0% {
+    opacity: 0;
+    transform: translateX(40px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes fadeInScale {
+  0% {
+    opacity: 0;
+    transform: scale(0.94);
+  }
+  100% {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+.animate-up,
+.animate-down,
+.animate-left,
+.animate-right,
+.animate-scale {
+  opacity: 0;
+  animation-fill-mode: both;
+  animation-timing-function: ease-out;
+  animation-duration: 0.4s;
+}
+
+.animate-up {
+  animation-name: fadeInUp;
+}
+
+.animate-down {
+  animation-name: fadeInDown;
+}
+
+.animate-left {
+  animation-name: fadeInLeft;
+}
+
+.animate-right {
+  animation-name: fadeInRight;
+}
+
+.animate-scale {
+  animation-name: fadeInScale;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0ms !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+.auth-overlay {
+  background: var(--overlay);
+}

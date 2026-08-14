@@ -1,110 +1,247 @@
+{% extends "base.html" %}
 {% load static %}
-<!doctype html>
-<html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Document</title>
-    <link rel="stylesheet" href="{% static 'css/home.css' %}" />
-  </head>
-  <body>
-    <nav class="bar">
-      <h1 class="logo">TINCHLIK</h1>
-      <ul class="list">
-        <li><a href="#">Asosiy</a></li>
-        <li><a href="#">Chat</a></li>
-        <li><a href="#">Biz bilan aloqa</a></li>
-      </ul>
-    </nav>
 
-    <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
-    <script src="{% static 'js/home.js' %}"></script>
-    <script>
-      const { animate, stagger } = anime;
+{% block content %}
+{% if user.is_authenticated %}
+  <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+  <link rel="stylesheet" href="{% static 'css/chat.css' %}" />
 
-const logo = document.querySelector(".logo");
+  <nav class="bar animate-down">
+    <a href="https://www.tinchlik.online" class="logo animate-left">TINCHLIK</a>
+    <ul class="list animate-right">
+      <li><a href="https://www.tinchlik.online">Asosiy</a></li>
+      <li><a href="{% url 'home' %}#chat">Chat</a></li>
+      <li><a href="#">Kontaktlar</a></li>
+      <li><a href="#">Biz bilan aloqa</a></li>
+    </ul>
+    <a href="{% url 'accounts:profile' %}" class="register profile-btn animate-right">
+      👤 {{ user.first_name|default:"Profil" }}
+    </a>
+  </nav>
 
-// TINCHLIK harflarini spanlarga ajratamiz
-logo.innerHTML = logo.textContent
-    .split("")
-    .map(letter => `<span>${letter}</span>`)
-    .join("");
+  <div class="auth-dashboard-shell">
+    <div class="auth-dashboard-grid">
+      <aside class="dashboard-panel dashboard-news">
+        <div class="panel-header">
+          <h2>Yangiliklar</h2>
+        </div>
 
-const chars = document.querySelectorAll(".logo span");
+        {% if news_items %}
+          <div class="news-list">
+            {% for item in news_items %}
+              <article class="news-item">
+                <h3>{{ item.title }}</h3>
+                <p>{{ item.summary }}</p>
+                <time>{{ item.created_at|date:"d.m.Y H:i" }}</time>
+              </article>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-panel-state">
+            <p>Hozircha yangiliklar yo'q.</p>
+          </div>
+        {% endif %}
+      </aside>
 
-animate(chars, {
-    y: {
-        from: -50
-    },
+      <main class="dashboard-main" id="chat">
+        {% include "chat/_chat_panel.html" %}
+      </main>
 
-    opacity: {
-        from: 0
-    },
+      <aside class="dashboard-panel dashboard-online">
+        <div class="panel-header">
+          <h2>Online</h2>
+        </div>
 
-    rotate: {
-        from: "-20deg"
-    },
+        {% if online_users %}
+          <div class="online-list">
+            {% for presence_user in online_users %}
+              <div class="online-user">
+                <div class="online-avatar-box">
+                  {% if presence_user.avatar %}
+                    <img src="{{ presence_user.avatar }}" alt="{{ presence_user.name }}" />
+                  {% else %}
+                    {{ presence_user.name|slice:':1'|upper }}
+                  {% endif %}
+                </div>
+                <div class="online-user-meta">
+                  <span>{{ presence_user.name }}</span>
+                </div>
+                <span class="online-indicator" aria-label="online"></span>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-panel-state">
+            <p>Hech kim online emas.</p>
+          </div>
+        {% endif %}
+      </aside>
+    </div>
+  </div>
+{% else %}
+  <!doctype html>
+  <html lang="en">
+    <head>
+      <meta charset="UTF-8" />
+      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+      <title>TINCHLIK | MFY</title>
+      <link rel="icon" type="image/jpeg" href="{% static 'images/favicon.jpg' %}">
+      <link rel="stylesheet" href="{% static 'css/home.css' %}" />
+    </head>
+    <body>
+      <nav class="bar animate-down">
+        <a href="https://www.tinchlik.online" class="logo animate-left">TINCHLIK</a>
+        <ul class="list animate-right">
+          <li><a href="https://www.tinchlik.online">Asosiy</a></li>
+          <li><a href="{% url 'home' %}#chat">Chat</a></li>
+          <li><a href="#">Kontaktlar</a></li>
+          <li><a href="#">Biz bilan aloqa</a></li>
+        </ul>
+        <a href="{% url 'accounts:register' %}?tab=login" class="register animate-right">
+          KIRISH
+        </a>
+      </nav>
 
-    duration: 900,
+      <div class="consider animate-up">
+        <a href="" class="const-box-small animate-scale">
+          <div class="elem-box">
+            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
+            <div class="cont-text">
+              <h2 class="tav">Mening Uyim</h2>
+              <p class="hav">Mening uyim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-    delay: stagger(100),
+        <a href="" class="const-box-big">
+          <div class="elem-box">
+            <img src="{% static 'images/mahalla.svg' %}" alt="" class="elem" id="tar2">
+            <div class="cont-text">
+              <h2 class="tav">Mening Mahallam</h2>
+              <p class="hav">Mening mahallam funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-    ease: "outBounce"
-});
+        <a href="" class="const-box-big">
+          <div class="elem-box">
+            <img src="{% static 'images/maktab.svg' %}" alt="" class="elem" id="mak">
+            <div class="cont-text">
+              <h2 class="tav">Mening Maktabim</h2>
+              <p class="hav">Mening maktabim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-const { animate, stagger } = anime;
+        <a href="" class="const-box-small">
+          <div class="elem-box">
+            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
+            <div class="cont-text">
+              <h2 class="tav">Mening Xizmatlarim</h2>
+              <p class="hav">Mening xizmatlarim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-const links = document.querySelectorAll(".list li a");
+        <a href="" class="const-box-small">
+          <div class="elem-box">
+            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
+            <div class="cont-text">
+              <h2 class="tav">Mening Uyim</h2>
+              <p class="hav">Mening uyim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
+        <a href="" class="const-box-big">
+          <div class="elem-box">
+            <img src="{% static 'images/mahalla.svg' %}" alt="" class="elem" id="tar2">
+            <div class="cont-text">
+              <h2 class="tav">Mening Mahallam</h2>
+              <p class="hav">Mening mahallam funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-// Sahifa ochilganda bittadan tepada tushadi
-animate(links, {
-    y: {
-        from: -50
-    },
+        <a href="" class="const-box-big">
+          <div class="elem-box">
+            <img src="{% static 'images/maktab.svg' %}" alt="" class="elem" id="mak">
+            <div class="cont-text">
+              <h2 class="tav">Mening Maktabim</h2>
+              <p class="hav">Mening maktabim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
 
-    opacity: {
-        from: 0
-    },
+        <a href="" class="const-box-small">
+          <div class="elem-box">
+            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
+            <div class="cont-text">
+              <h2 class="tav">Mening Xizmatlarim</h2>
+              <p class="hav">Mening xizmatlarim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+            </div>
+          </div>
+        </a>
+      </div>
 
-    scale: {
-        from: 0.85
-    },
+      <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
+      <script src="{% static 'js/home.js' %}"></script>
+      <script>
+        const { animate, stagger } = anime;
+        const logo = document.querySelector(".logo");
 
-    duration: 900,
+        if (logo) {
+          logo.innerHTML = logo.textContent
+            .split("")
+            .map(letter => `<span>${letter}</span>`)
+            .join("");
 
-    delay: stagger(150),
+          const chars = document.querySelectorAll(".logo span");
 
-    ease: "outExpo"
-});
+          animate(chars, {
+            y: { from: -20 },
+            opacity: { from: 0 },
+            rotate: { from: "-12deg" },
+            duration: 600,
+            delay: stagger(50),
+            ease: "outExpo"
+          });
+        }
 
+        const links = document.querySelectorAll(".list li a");
 
-// Hover animatsiya
-links.forEach(link => {
+        if (links.length) {
+          animate(links, {
+            y: { from: -18 },
+            opacity: { from: 0 },
+            scale: { from: 0.96 },
+            duration: 550,
+            delay: stagger(80),
+            ease: "outExpo"
+          });
 
-    link.addEventListener("mouseenter", () => {
+          links.forEach(link => {
+            link.addEventListener("mouseenter", () => {
+              animate(link, {
+                y: -3,
+                scale: 1.02,
+                duration: 180,
+                ease: "outQuad"
+              });
+            });
 
-        animate(link, {
-            y: -4,
-            scale: 1.06,
-            duration: 250,
-            ease: "outQuad"
-        });
-
-    });
-
-    link.addEventListener("mouseleave", () => {
-
-        animate(link, {
-            y: 0,
-            scale: 1,
-            duration: 250,
-            ease: "outQuad"
-        });
-
-    });
-
-});
-    </script>
-  </body>
-</html>
+            link.addEventListener("mouseleave", () => {
+              animate(link, {
+                y: 0,
+                scale: 1,
+                duration: 180,
+                ease: "outQuad"
+              });
+            });
+          });
+        }
+      </script>
+    </body>
+  </html>
+{% endif %}
+{% endblock %}

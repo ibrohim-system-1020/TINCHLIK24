@@ -1,0 +1,732 @@
+{% load static %}
+
+<script>
+// Initial theme setup for this standalone page
+(function(){
+  try{
+    var theme = localStorage.getItem('theme');
+    if(!theme){
+      theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
+    }
+    document.documentElement.setAttribute('data-theme', theme);
+    var s = document.createElement('style'); s.id='theme-init-style'; s.innerHTML='*{transition:none!important}'; document.head.appendChild(s);
+  }catch(e){}
+})();
+</script>
+
+<!DOCTYPE html>
+<html lang="uz">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <title>TINCHLIK | Kirish</title>
+
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: Arial, sans-serif;
+        }
+
+        body {
+            min-height: 100vh;
+            background: var(--bg);
+
+            display: flex;
+            justify-content: center;
+            align-items: center;
+
+            padding: 20px;
+        }
+
+        .auth-modal {
+            width: 100%;
+            max-width: 470px;
+
+            background: var(--surface);
+
+            border-radius: 22px;
+            padding: 30px;
+
+            position: relative;
+
+            box-shadow: var(--shadow);
+        }
+
+        .auth-close {
+            position: absolute;
+
+            right: 20px;
+            top: 18px;
+
+            width: 38px;
+            height: 38px;
+
+            border-radius: 50%;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            text-decoration: none;
+
+            background: var(--surface-strong);
+            color: var(--text);
+
+            font-size: 22px;
+        }
+
+        .auth-close:hover,
+        .auth-close:focus-visible {
+            background: rgba(0,0,0,0.06);
+            transform: translateY(-1px);
+        }
+
+        .auth-header {
+            text-align: center;
+            margin-bottom: 25px;
+        }
+
+        .auth-logo {
+            width: 60px;
+            height: 60px;
+
+            margin: 0 auto 12px;
+
+            display: flex;
+            align-items: center;
+            justify-content: center;
+
+            border-radius: 16px;
+
+            background: var(--button-bg);
+            color: var(--button-text);
+
+            font-size: 23px;
+            font-weight: bold;
+        }
+
+        .auth-header h2 {
+            font-size: 24px;
+            color: var(--text);
+        }
+
+        .auth-header p {
+            margin-top: 7px;
+            font-size: 14px;
+            color: var(--muted);
+        }
+
+        .auth-tabs {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+
+            padding: 5px;
+
+            background: var(--surface-strong);
+            border-radius: 13px;
+
+            margin-bottom: 25px;
+        }
+
+        .auth-tab {
+            padding: 12px;
+
+            border: none;
+            border-radius: 9px;
+
+            background: transparent;
+
+            color: var(--muted);
+
+            font-size: 14px;
+            font-weight: 600;
+
+            cursor: pointer;
+            transition:
+                transform 0.25s ease,
+                background-color 0.25s ease,
+                color 0.25s ease,
+                box-shadow 0.25s ease;
+        }
+
+        .auth-tab.active {
+            background: var(--surface);
+            color: var(--text);
+
+            box-shadow: 0 3px 10px rgba(0,0,0,.08);
+        }
+
+        .auth-form {
+            display: none;
+        }
+
+        .auth-form.active {
+            display: block;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .input-box {
+            margin-bottom: 15px;
+        }
+
+        .input-box label {
+            display: block;
+
+            margin-bottom: 7px;
+
+            font-size: 13px;
+            font-weight: 600;
+
+            color: #333;
+        }
+
+        .input-box input {
+            width: 100%;
+
+            padding: 14px;
+
+            border-radius: 11px;
+            border: 1px solid #dedede;
+
+            outline: none;
+
+            font-size: 14px;
+            transition:
+                border-color 0.25s ease,
+                box-shadow 0.25s ease,
+                background-color 0.25s ease,
+                color 0.25s ease;
+        }
+
+        .input-box input:focus,
+        .input-box input:focus-visible {
+            border-color: #111;
+            box-shadow: 0 0 0 3px rgba(0,0,0,.05);
+        }
+
+        .password-box {
+            position: relative;
+        }
+
+        .password-box input {
+            padding-right: 50px;
+        }
+
+        .show-password {
+            position: absolute;
+
+            right: 10px;
+            top: 50%;
+
+            transform: translateY(-50%);
+
+            border: none;
+            background: none;
+
+            cursor: pointer;
+
+            font-size: 18px;
+        }
+
+        .terms {
+            display: flex;
+            align-items: center;
+            gap: 9px;
+
+            margin-bottom: 18px;
+
+            font-size: 13px;
+            color: #666;
+        }
+
+        .terms input {
+            width: 17px;
+            height: 17px;
+        }
+
+        .terms a {
+            color: #111;
+            font-weight: 600;
+        }
+
+        .auth-submit {
+            width: 100%;
+
+            padding: 14px;
+
+            border: none;
+            border-radius: 11px;
+
+            background: #111;
+            color: white;
+
+            font-size: 15px;
+            font-weight: 600;
+
+            cursor: pointer;
+            transition:
+                transform 0.25s ease,
+                background-color 0.3s ease,
+                box-shadow 0.3s ease,
+                color 0.3s ease;
+        }
+
+        .auth-submit:hover,
+        .auth-submit:focus-visible {
+            background: #292929;
+            transform: translateY(-1px);
+            box-shadow: 0 10px 20px rgba(17, 24, 39, 0.12);
+        }
+
+        .auth-or {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+
+            margin: 20px 0;
+
+            color: #aaa;
+            font-size: 12px;
+        }
+
+        .auth-or::before,
+        .auth-or::after {
+            content: "";
+            flex: 1;
+            height: 1px;
+            background: #ddd;
+        }
+
+        .telegram-btn {
+            width: 100%;
+
+            padding: 14px;
+
+            border: none;
+            border-radius: 11px;
+
+            background: #229ED9;
+            color: white;
+
+            font-size: 14px;
+            font-weight: 600;
+
+            cursor: pointer;
+            transition:
+                transform 0.25s ease,
+                background-color 0.3s ease,
+                box-shadow 0.3s ease,
+                opacity 0.3s ease;
+        }
+
+        .telegram-btn:hover,
+        .telegram-btn:focus-visible {
+            transform: translateY(-1px);
+            background: #1d8cc6;
+            box-shadow: 0 12px 22px rgba(34, 158, 217, 0.2);
+        }
+
+        .forgot-password {
+            display: block;
+
+            text-align: right;
+
+            margin-top: -5px;
+            margin-bottom: 18px;
+
+            text-decoration: none;
+
+            color: #555;
+
+            font-size: 13px;
+        }
+
+        .auth-message {
+            padding: 12px;
+
+            border-radius: 10px;
+
+            margin-bottom: 15px;
+
+            font-size: 13px;
+            transition: transform 0.25s ease, opacity 0.25s ease;
+        }
+
+        .auth-message.error {
+            background: #fef3f2;
+            color: #b42318;
+        }
+
+        .auth-message.success {
+            background: #ecfdf3;
+            color: #067647;
+        }
+
+        @media (max-width: 550px) {
+            .auth-modal {
+                padding: 25px 20px;
+            }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+
+<body>
+
+<div class="auth-modal">
+
+    <!-- X BOSILSA HOME -->
+    <a href="/" class="auth-close">×</a>
+
+    <div class="auth-header">
+        <div class="auth-logo">T</div>
+
+        <h2>TINCHLIK | MFY</h2>
+
+        <p>Tizimga kiring yoki yangi akkaunt yarating</p>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+            <div class="auth-message {{ message.tags }}">
+                {{ message }}
+            </div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="auth-tabs">
+
+        <button
+            type="button"
+            class="auth-tab {% if request.GET.tab != 'login' %}active{% endif %}"
+            data-tab="register"
+        >
+            Ro'yxatdan o'tish
+        </button>
+
+        <button
+            type="button"
+            class="auth-tab {% if request.GET.tab == 'login' %}active{% endif %}"
+            data-tab="login"
+        >
+            Kirish
+        </button>
+
+    </div>
+
+
+    <!-- REGISTER -->
+
+    <form
+        class="auth-form {% if request.GET.tab != 'login' %}active{% endif %}"
+        id="registerForm"
+        method="POST"
+        action="/register/"
+    >
+        {% csrf_token %}
+
+        <div class="form-row">
+
+            <div class="input-box">
+                <label>Ism</label>
+
+                <input
+                    type="text"
+                    name="first_name"
+                    placeholder="Ismingiz"
+                    value="{{ registration_data.first_name|default_if_none:'' }}"
+                    required
+                >
+            </div>
+
+            <div class="input-box">
+                <label>Familiya</label>
+
+                <input
+                    type="text"
+                    name="last_name"
+                    placeholder="Familiyangiz"
+                    value="{{ registration_data.last_name|default_if_none:'' }}"
+                    required
+                >
+            </div>
+
+        </div>
+
+        <div class="input-box">
+            <label>Email</label>
+
+            <input
+                type="email"
+                name="email"
+                placeholder="example@gmail.com"
+                value="{{ registration_data.email|default_if_none:'' }}"
+                required
+            >
+        </div>
+
+        <div class="input-box">
+            <label>Telefon</label>
+
+            <input
+                type="tel"
+                name="telefon"
+                placeholder="+998 90 123 45 67"
+                value="{{ registration_data.telefon|default_if_none:'' }}"
+                required
+            >
+        </div>
+
+        <div class="input-box">
+            <label>Parol</label>
+
+            <div class="password-box">
+
+                <input
+                    type="password"
+                    name="password1"
+                    id="registerPassword1"
+                    placeholder="Kamida 8 ta belgi"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="show-password"
+                    onclick="showPassword('registerPassword1')"
+                >
+                    👁
+                </button>
+
+            </div>
+        </div>
+
+        <div class="input-box">
+            <label>Parolni qayta yozing</label>
+
+            <div class="password-box">
+
+                <input
+                    type="password"
+                    name="password2"
+                    id="registerPassword2"
+                    placeholder="Parolni qayta kiriting"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="show-password"
+                    onclick="showPassword('registerPassword2')"
+                >
+                    👁
+                </button>
+
+            </div>
+        </div>
+
+        <label class="terms">
+
+            <input
+                type="checkbox"
+                name="terms"
+                required
+            >
+
+            <span>
+                Men
+                <a href="#">foydalanish shartlari</a>
+                va
+                <a href="#">maxfiylik siyosati</a>
+                ga roziman
+            </span>
+
+        </label>
+
+        <button
+            type="submit"
+            class="auth-submit"
+        >
+            RO'YXATDAN O'TISH
+        </button>
+
+        <div class="auth-or">
+            YOKI
+        </div>
+
+        <button
+    type="submit"
+    class="telegram-btn"
+    id="telegramRegister"
+>
+    ✈ Telegram orqali ro'yxatdan o'tish
+</button>
+
+    </form>
+
+
+    <!-- LOGIN -->
+
+    <form
+        class="auth-form {% if request.GET.tab == 'login' %}active{% endif %}"
+        id="loginForm"
+        method="POST"
+        action="/login/"
+    >
+        {% csrf_token %}
+
+        <div class="input-box">
+
+            <label>Email yoki login</label>
+
+            <input
+                type="text"
+                name="username"
+                placeholder="Email yoki login"
+                required
+            >
+
+        </div>
+
+        <div class="input-box">
+
+            <label>Parol</label>
+
+            <div class="password-box">
+
+                <input
+                    type="password"
+                    name="password"
+                    id="loginPassword"
+                    placeholder="Parolingiz"
+                    required
+                >
+
+                <button
+                    type="button"
+                    class="show-password"
+                    onclick="showPassword('loginPassword')"
+                >
+                    👁
+                </button>
+
+            </div>
+
+        </div>
+
+        <a
+            href="#"
+            class="forgot-password"
+        >
+            Parolni unutdingizmi?
+        </a>
+
+        <button
+            type="submit"
+            class="auth-submit"
+        >
+            KIRISH
+        </button>
+
+        <div class="auth-or">
+            YOKI
+        </div>
+
+        <button
+            type="button"
+            class="telegram-btn"
+        >
+            ✈ Telegram orqali kirish
+        </button>
+
+    </form>
+
+</div>
+
+
+<script>
+
+const tabs = document.querySelectorAll(".auth-tab");
+
+const registerForm =
+    document.getElementById("registerForm");
+
+const loginForm =
+    document.getElementById("loginForm");
+
+
+function openRegister() {
+
+    registerForm.classList.add("active");
+    loginForm.classList.remove("active");
+
+    tabs[0].classList.add("active");
+    tabs[1].classList.remove("active");
+
+}
+
+
+function openLogin() {
+
+    registerForm.classList.remove("active");
+    loginForm.classList.add("active");
+
+    tabs[0].classList.remove("active");
+    tabs[1].classList.add("active");
+
+}
+
+
+tabs.forEach(tab => {
+
+    tab.addEventListener("click", function () {
+
+        if (this.dataset.tab === "login") {
+
+            openLogin();
+
+        } else {
+
+            openRegister();
+
+        }
+
+    });
+
+});
+
+
+function showPassword(id) {
+
+    const input = document.getElementById(id);
+
+    if (input.type === "password") {
+
+        input.type = "text";
+
+    } else {
+
+        input.type = "password";
+
+    }
+
+}
+
+</script>
+
+    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
+    <script src="{% static 'js/theme.js' %}"></script>
+</body>
+
+</html>
