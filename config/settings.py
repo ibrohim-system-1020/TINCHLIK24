@@ -26,8 +26,21 @@ def env_list(name: str, default: str) -> list[str]:
 
 
 def env_value(name: str, default: str = "") -> str:
-    value = os.getenv(name, default)
-    return value.strip() if isinstance(value, str) else default
+    value = os.getenv(name)
+    if value is None:
+        return default
+    value = value.strip()
+    return value or default
+
+
+def env_int(name: str, default: int) -> int:
+    value = env_value(name)
+    if not value:
+        return default
+    try:
+        return int(value)
+    except (TypeError, ValueError):
+        return default
 
 
 DEBUG = env_bool("DEBUG", True)
@@ -55,7 +68,7 @@ SITE_NAME = env_value("SITE_NAME", "TINCHLIK")
 DEFAULT_FROM_EMAIL = env_value("DEFAULT_FROM_EMAIL", "noreply@tinchlik24.uz")
 EMAIL_BACKEND = env_value("EMAIL_BACKEND", "django.core.mail.backends.smtp.EmailBackend")
 EMAIL_HOST = env_value("EMAIL_HOST", "smtp.gmail.com")
-EMAIL_PORT = int(os.getenv("EMAIL_PORT", "587"))
+EMAIL_PORT = env_int("EMAIL_PORT", 587)
 EMAIL_USE_TLS = env_bool("EMAIL_USE_TLS", True)
 EMAIL_USE_SSL = env_bool("EMAIL_USE_SSL", False)
 EMAIL_HOST_USER = env_value("EMAIL_HOST_USER")
@@ -76,14 +89,14 @@ else:
 
 MAIN_ADMIN_USERNAME = env_value("MAIN_ADMIN_USERNAME", "admin")
 MAIN_ADMIN_PASSWORD = env_value("MAIN_ADMIN_PASSWORD")
-BOT_LOGIN_MAX_ATTEMPTS = int(os.getenv("BOT_LOGIN_MAX_ATTEMPTS", "5"))
-BOT_LOGIN_BLOCK_MINUTES = int(os.getenv("BOT_LOGIN_BLOCK_MINUTES", "15"))
+BOT_LOGIN_MAX_ATTEMPTS = env_int("BOT_LOGIN_MAX_ATTEMPTS", 5)
+BOT_LOGIN_BLOCK_MINUTES = env_int("BOT_LOGIN_BLOCK_MINUTES", 15)
 
 TELEGRAM_GATEWAY_TOKEN = env_value("TELEGRAM_GATEWAY_TOKEN")
-TELEGRAM_GATEWAY_RESEND_COOLDOWN_SECONDS = int(os.getenv("TELEGRAM_GATEWAY_RESEND_COOLDOWN_SECONDS", "60"))
-TELEGRAM_GATEWAY_CODE_TTL_SECONDS = int(os.getenv("TELEGRAM_GATEWAY_CODE_TTL_SECONDS", "300"))
-PENDING_REGISTRATION_EXPIRE_MINUTES = int(os.getenv("PENDING_REGISTRATION_EXPIRE_MINUTES", "30"))
-VALIDATION_LINK_TTL_MINUTES = int(os.getenv("VALIDATION_LINK_TTL_MINUTES", "10"))
+TELEGRAM_GATEWAY_RESEND_COOLDOWN_SECONDS = env_int("TELEGRAM_GATEWAY_RESEND_COOLDOWN_SECONDS", 60)
+TELEGRAM_GATEWAY_CODE_TTL_SECONDS = env_int("TELEGRAM_GATEWAY_CODE_TTL_SECONDS", 300)
+PENDING_REGISTRATION_EXPIRE_MINUTES = env_int("PENDING_REGISTRATION_EXPIRE_MINUTES", 30)
+VALIDATION_LINK_TTL_MINUTES = env_int("VALIDATION_LINK_TTL_MINUTES", 10)
 
 INSTALLED_APPS = [
     'django.contrib.admin',
