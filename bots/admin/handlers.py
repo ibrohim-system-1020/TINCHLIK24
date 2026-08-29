@@ -3,8 +3,18 @@ from typing import Optional
 
 from asgiref.sync import sync_to_async
 from django.conf import settings
-from telegram import Update
-from telegram.ext import CallbackContext, ConversationHandler, filters
+from typing import Any
+
+try:
+    from telegram import Update
+    from telegram.ext import CallbackContext, ConversationHandler, filters
+    TELEGRAM_AVAILABLE = True
+except Exception:
+    Update = Any
+    CallbackContext = Any
+    ConversationHandler = None
+    filters = None
+    TELEGRAM_AVAILABLE = False
 
 from .keyboards import (
     back_to_main_keyboard,

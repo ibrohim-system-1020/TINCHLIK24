@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="blocked-page">
+  <h1>Siz bloklandingiz</h1>
+  <p>Sabab: {{ ban.reason }}</p>
+  {% if ban.permanent %}
+    <p>Blok doimiy.</p>
+  {% else %}
+    <p>Blok tugash vaqti: {{ ban.expires_at }}</p>
+  {% endif %}
+</div>
+{% endblock %}

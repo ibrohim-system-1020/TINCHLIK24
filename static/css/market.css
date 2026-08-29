@@ -1,0 +1,33 @@
+/* Basic marketplace styles: grid, cards, gallery */
+.market-listings .section-heading {display:flex;justify-content:space-between;align-items:center;margin-bottom:1rem}
+.market-search {display:flex;gap:.5rem;margin:1rem 0}
+.market-search input[type=search]{flex:1;padding:.6rem;border:1px solid #ddd;border-radius:6px}
+.listings-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem}
+.listing-card{background:#fff;border:1px solid #eee;border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
+.listing-card img{width:100%;height:180px;object-fit:cover}
+.listing-body{padding:.6rem}
+.listing-body h3{margin:.2rem 0;font-size:1rem}
+.listing-body .meta{display:flex;justify-content:space-between;align-items:center}
+.price{font-weight:700;color:#111}
+.cond{font-size:.85rem;color:#666}
+.empty-state{padding:2rem;text-align:center;color:#666}
+.pagination{display:flex;justify-content:center;align-items:center;gap:.75rem;margin-top:1rem}
+
+/* Detail */
+.detail-grid{display:grid;grid-template-columns:1fr 360px;gap:1.5rem}
+.gallery .main-image-wrap{background:#f6f6f6;padding:1rem;border-radius:8px}
+.main-img{width:100%;height:400px;object-fit:contain}
+.thumbs{display:flex;gap:.5rem;margin-top:.5rem}
+.thumb img{width:64px;height:64px;object-fit:cover;border-radius:6px}
+.seller-card{background:#fff;border:1px solid #eee;padding:1rem;border-radius:8px}
+
+/* Create */
+.create-form .form-row{margin-bottom:1rem;display:flex;flex-direction:column;gap:.5rem}
+.create-form input, .create-form select, .create-form textarea{padding:.6rem;border:1px solid #ddd;border-radius:6px}
+.image-previews{display:flex;gap:.5rem;flex-wrap:wrap;margin-top:.5rem}
+.preview-item img{width:120px;height:80px;object-fit:cover;border-radius:6px}
+
+/* Responsive */
+@media (max-width: 1024px){.listings-grid{grid-template-columns:repeat(3,1fr)}}
+@media (max-width: 768px){.listings-grid{grid-template-columns:repeat(2,1fr)};.detail-grid{grid-template-columns:1fr}}
+@media (max-width:480px){.listings-grid{grid-template-columns:repeat(1,1fr)}.main-img{height:260px}}

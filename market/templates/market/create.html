@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load static %}
+<link rel="stylesheet" href="{% static 'css/market.css' %}">
+{% block title %}+ E'lon joylash{% endblock %}
+{% block content %}
+<section class="create-listing section-wrap">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Bozor</span>
+      <h2>Yangi e'lon joylash</h2>
+    </div>
+  </div>
+
+  <form method="post" enctype="multipart/form-data" class="create-form">
+    {% csrf_token %}
+      <div class="form-row">
+        <label for="id_title">1) Mahsulot nomi</label>
+        {{ form.title }}
+      </div>
+
+      <div class="form-row">
+        <label for="id_condition">2) Holatini tanlang</label>
+        {{ form.condition }}
+      </div>
+
+      <div class="form-row">
+        <label for="id_category">3) Kategoriya</label>
+        {{ form.category }}
+      </div>
+
+      <div class="form-row">
+        <label for="id_description">Tavsif</label>
+        {{ form.description }}
+      </div>
+
+      <div class="form-row">
+        <label for="id_price">Narxi</label>
+        {{ form.price }} <span class="currency">so'm</span>
+        <label class="inline"><input type="checkbox" name="negotiable"> Kelishiladi</label>
+      </div>
+
+      <div class="form-row">
+        <label>Mahsulot rasmlari (kamida 3 ta)</label>
+        {{ image_form.images }}
+        <div id="image-previews" class="image-previews"></div>
+      </div>
+
+      <button type="submit" class="btn btn-primary" id="submit-button">{% if editing %}Saqlash{% else %}E'lonni joylash{% endif %}</button>
+  </form>
+</section>
+<script src="{% static 'js/market.js' %}"></script>
+{% endblock %}

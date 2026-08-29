@@ -1,0 +1,1 @@
+{{ site_name }}\n\nSalom {{ pending.first_name }},\n\nRo'yxatdan o'tish uchun email manzilingizni tasdiqlash uchun quyidagi havolani oching:\n\n{{ verify_url }}\n\nUshbu havola {{ expire_minutes }} daqiqa ichida amal qiladi.\n\nAgar siz ro'yxatdan o'tmagan bo'lsangiz, bu xabarni e'tiborsiz qoldiring.\n\nHurmat bilan,\n{{ site_name }}\n

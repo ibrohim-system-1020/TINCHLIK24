@@ -1,25 +1,12 @@
 {% extends 'base.html' %}
 
+{% block title %}TINCHLIK | Xavfsizlik{% endblock %}
+
 {% block content %}
 <section class="security-page">
   <div class="security-shell">
-    <aside class="security-sidebar">
-      <div class="brand-header">
-        <div class="brand-title">TINCHLIK | MFY</div>
-        <div class="brand-subtitle">Shaxsiy boshqaruv paneli</div>
-      </div>
-
-      <nav class="profile-nav">
-        <a href="/" class="nav-item">🏠 Bosh sahifa</a>
-        <a href="{% url 'accounts:profile' %}" class="nav-item">👤 Profil</a>
-        <a href="{% url 'accounts:security' %}" class="nav-item active">🔐 Xavfsizlik</a>
-        <a href="#login-history" class="nav-item">🕘 Kirishlar tarixi</a>
-        <a href="{% url 'accounts:logout' %}" class="nav-item">🚪 Chiqish</a>
-      </nav>
-    </aside>
-
     <main class="security-content">
-      <div class="security-header">
+      <header class="security-header">
         <div>
           <p class="section-label">Xavfsizlik</p>
           <h1>Xavfsizlik boshqaruvi</h1>
@@ -46,7 +33,7 @@
             </span>
           </div>
         </div>
-      </div>
+      </header>
 
       <div class="security-grid">
         <section class="card score-card">
@@ -177,26 +164,46 @@
         </section>
       </div>
 
-      <section class="card danger-card">
+      <section class="card danger-card" id="danger-zone">
         <div class="card-title">
           <div>
             <p class="section-label">Xavfli amallar</p>
             <h2>Hisob xavfsizligi</h2>
           </div>
         </div>
-        <p class="card-note">Quyidagi amal jiddiy hisoblanadi. Faqat kerak bo‘lganda ishlating.</p>
+        <p class="card-note">Hisobingiz o‘chirilgandan keyin uni qayta tiklab bo‘lmaydi. Bu amal faqat rozilik bilan bajariladi.</p>
 
         <div class="danger-actions">
-          <a href="{% url 'accounts:logout' %}" class="danger-button">🚪 Hisobdan chiqish</a>
-          <button type="button" class="danger-button disabled">Hisobni o‘chirish <span class="button-badge">Tez orada</span></button>
+          <a href="{% url 'accounts:logout' %}" class="danger-button secondary">🚪 Hisobdan chiqish</a>
+          <button type="button" class="danger-button delete-trigger" data-delete-modal-open="true">Hisobni o‘chirish</button>
         </div>
       </section>
     </main>
   </div>
 </section>
+
+<div class="delete-confirm-overlay" id="delete-confirm-overlay" aria-hidden="true">
+  <div class="delete-confirm-modal" role="dialog" aria-modal="true" aria-labelledby="delete-confirm-title">
+    <button type="button" class="delete-close" aria-label="Yopish" data-delete-modal-close="true">×</button>
+    <p class="section-label">Hisobni o‘chirish</p>
+    <h2 id="delete-confirm-title">Hisobni o‘chirmoqchimisiz?</h2>
+    <p class="delete-description">Hisobingiz va unga tegishli shaxsiy ma’lumotlar o‘chiriladi. Bu amalni ortga qaytarib bo‘lmaydi.</p>
+
+    <form method="post" action="{% url 'accounts:delete_account' %}" class="delete-account-form">
+      {% csrf_token %}
+      <div class="delete-field">
+        <label for="delete-password">Joriy parol</label>
+        <input id="delete-password" name="password" type="password" autocomplete="current-password" placeholder="Parolingizni kiriting" required />
+      </div>
+      <div class="delete-actions">
+        <button type="button" class="ghost-button" data-delete-modal-close="true">Bekor qilish</button>
+        <button type="submit" class="danger-button destructive">Hisobni butunlay o‘chirish</button>
+      </div>
+    </form>
+  </div>
+</div>
 {% endblock %}
 
-{% block extra_css %}
 <style>
   :root {
     --bg: #f6f7f9;
@@ -211,6 +218,19 @@
     --shadow: 0 24px 60px rgba(17, 24, 39, 0.08);
   }
 
+  html[data-theme="dark"] {
+    --bg: #0b1220;
+    --surface: #111b2e;
+    --surface-strong: #172235;
+    --text: #f8fafc;
+    --muted: #aebbd0;
+    --border: rgba(255, 255, 255, 0.08);
+    --success: #86efac;
+    --warning: #fbbf24;
+    --accent: #f8fafc;
+    --shadow: 0 24px 60px rgba(2, 6, 23, 0.62);
+  }
+
   .security-page {
     min-height: calc(100vh - 0px);
     background: var(--bg);
@@ -220,60 +240,20 @@
   .security-shell {
     max-width: 1400px;
     margin: 0 auto;
-    display: grid;
-    grid-template-columns: 280px 1fr;
-    gap: 28px;
   }
 
-  .security-sidebar {
-    display: flex;
-    flex-direction: column;
-    gap: 20px;
-  }
-
-  .brand-header {
-    padding: 28px;
-    border-radius: 28px;
-    background: var(--surface);
-    box-shadow: var(--shadow);
-  }
-
-  .brand-title {
-    font-size: 18px;
-    font-weight: 700;
-    letter-spacing: 0.04em;
-    margin-bottom: 8px;
-  }
-
-  .brand-subtitle {
-    color: var(--muted);
-    font-size: 14px;
-    line-height: 1.6;
-  }
-
-  .profile-nav {
-    display: grid;
-    gap: 12px;
-  }
-
-  .nav-item {
-    display: block;
-    padding: 16px 18px;
-    border-radius: 22px;
-    background: var(--surface);
-    color: var(--text);
-    text-decoration: none;
-    box-shadow: 0 18px 40px rgba(17, 24, 39, 0.06);
-    transition: transform 0.15s ease, background-color 0.18s ease, color 0.18s ease, box-shadow 0.18s ease;
-  }
-
-  .nav-item:hover,
-  .nav-item:focus-visible,
-  .nav-item.active {
-    background: #111111;
-    color: #ffffff;
-    transform: translateY(-1px);
-    box-shadow: 0 18px 36px rgba(17, 24, 39, 0.12);
+  .security-header,
+  .user-summary-card,
+  .card,
+  .metric-item,
+  .info-row,
+  .info-item,
+  .danger-card,
+  .status-badge,
+  .action-button,
+  .danger-button,
+  .progress-bar {
+    border: 1px solid var(--border);
   }
 
   .security-content {
@@ -297,6 +277,7 @@
     font-size: clamp(2rem, 2.4vw, 2.6rem);
     letter-spacing: -0.04em;
     margin: 12px 0 10px;
+    color: var(--text);
   }
 
   .section-label {
@@ -320,7 +301,7 @@
     padding: 18px 22px;
     border-radius: 26px;
     background: var(--surface-strong);
-    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.7);
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.04);
   }
 
   .avatar-shell {
@@ -331,6 +312,10 @@
     background: #111111;
     display: grid;
     place-items: center;
+  }
+
+  html[data-theme="dark"] .avatar-shell {
+    background: linear-gradient(135deg, rgba(96, 165, 250, 0.28), rgba(56, 189, 248, 0.18));
   }
 
   .avatar-img {
@@ -354,12 +339,12 @@
   }
 
   .badge-success {
-    background: #ecfdf5;
+    background: rgba(34, 197, 94, 0.12);
     color: var(--success);
   }
 
   .badge-warning {
-    background: #fff7ed;
+    background: rgba(245, 158, 11, 0.12);
     color: var(--warning);
   }
 
@@ -374,7 +359,7 @@
     border-radius: 28px;
     padding: 28px;
     box-shadow: var(--shadow);
-    border: 1px solid rgba(17, 24, 39, 0.05);
+    border: 1px solid var(--border);
   }
 
   .score-card {
@@ -392,6 +377,7 @@
   .card-title h2 {
     font-size: 1.5rem;
     margin: 8px 0 0;
+    color: var(--text);
   }
 
   .status-chip {
@@ -401,6 +387,12 @@
     color: #ffffff;
     font-size: 0.9rem;
     font-weight: 700;
+  }
+
+  html[data-theme="dark"] .status-chip {
+    background: #1d2b42;
+    color: var(--text);
+    border-color: var(--border);
   }
 
   .score-summary {
@@ -426,7 +418,7 @@
   .progress-bar {
     height: 14px;
     border-radius: 999px;
-    background: #e7ecf4;
+    background: rgba(148, 163, 184, 0.2);
     overflow: hidden;
     margin: 24px 0;
   }
@@ -436,6 +428,10 @@
     height: 100%;
     border-radius: 999px;
     background: linear-gradient(90deg, #111111 0%, #575757 100%);
+  }
+
+  html[data-theme="dark"] .progress-fill {
+    background: linear-gradient(90deg, rgba(96, 165, 250, 0.96), rgba(56, 189, 248, 0.86));
   }
 
   .security-metrics {
@@ -455,6 +451,7 @@
   .metric-title {
     font-weight: 700;
     margin-bottom: 6px;
+    color: var(--text);
   }
 
   .metric-note {
@@ -510,10 +507,18 @@
     box-shadow: 0 16px 28px rgba(17, 24, 39, 0.1);
   }
 
+  html[data-theme="dark"] .action-button:hover,
+  html[data-theme="dark"] .action-button:focus-visible,
+  html[data-theme="dark"] .danger-button:hover,
+  html[data-theme="dark"] .danger-button:focus-visible {
+    box-shadow: 0 16px 30px rgba(2, 6, 23, 0.46);
+  }
+
   .action-button.disabled {
-    opacity: 0.55;
+    opacity: 0.7;
     cursor: not-allowed;
-    background: #d1d5db;
+    background: rgba(148, 163, 184, 0.22);
+    color: var(--text);
   }
 
   .button-badge {
@@ -521,6 +526,11 @@
     padding: 6px 10px;
     border-radius: 999px;
     font-size: 0.85rem;
+  }
+
+  html[data-theme="dark"] .button-badge {
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text);
   }
 
   .status-row {
@@ -532,6 +542,7 @@
 
   .status-label {
     font-weight: 700;
+    color: var(--text);
   }
 
   .status-meta {
@@ -546,6 +557,8 @@
     border-radius: 20px;
     background: var(--surface-strong);
     margin-top: 14px;
+    overflow-wrap: anywhere;
+    border: 1px solid var(--border);
   }
 
   .info-row span:first-child {
@@ -554,6 +567,7 @@
 
   .info-value {
     font-weight: 700;
+    color: var(--text);
   }
 
   .info-card .info-grid {
@@ -566,6 +580,7 @@
     padding: 18px 20px;
     border-radius: 22px;
     background: var(--surface-strong);
+    border: 1px solid var(--border);
   }
 
   .info-item span {
@@ -583,8 +598,13 @@
 
   .danger-card {
     grid-column: span 2;
-    background: #fff4f2;
-    border-color: rgba(244, 214, 207, 0.8);
+    background: rgba(239, 68, 68, 0.08);
+    border-color: rgba(248, 113, 113, 0.2);
+  }
+
+  html[data-theme="dark"] .danger-card {
+    background: rgba(127, 29, 29, 0.18);
+    border-color: rgba(248, 113, 113, 0.28);
   }
 
   .danger-actions {
@@ -595,6 +615,10 @@
   }
 
   .danger-button {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
     padding: 16px 24px;
     border-radius: 20px;
     border: none;
@@ -602,24 +626,152 @@
     cursor: pointer;
     min-width: 220px;
     text-align: center;
-    transition: transform 0.25s ease, background-color 0.3s ease, box-shadow 0.3s ease;
+    text-decoration: none;
+    transition: transform 0.25s ease, background-color 0.3s ease, box-shadow 0.3s ease, opacity 0.25s ease;
   }
 
-  .danger-button:hover,
-  .danger-button:focus-visible {
-    transform: translateY(-1px);
-    box-shadow: 0 16px 28px rgba(17, 24, 39, 0.08);
-  }
-
-  .danger-button:first-child {
+  .danger-button:first-child,
+  .danger-button.secondary {
     background: #111111;
     color: #ffffff;
   }
 
   .danger-button.disabled {
-    background: #f3f4f6;
-    color: #6b7280;
+    background: rgba(148, 163, 184, 0.18);
+    color: var(--muted);
     cursor: not-allowed;
+  }
+
+  .danger-button.destructive {
+    background: linear-gradient(135deg, #dc2626 0%, #b91c1c 100%);
+    color: #ffffff;
+    border: 1px solid rgba(248, 113, 113, 0.3);
+  }
+
+  html[data-theme="dark"] .danger-button.secondary,
+  html[data-theme="dark"] .danger-button:first-child {
+    background: rgba(30, 41, 59, 0.96);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .delete-confirm-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(2, 6, 23, 0.72);
+    backdrop-filter: blur(8px);
+    display: none;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+    z-index: 9999;
+  }
+
+  .delete-confirm-overlay.active {
+    display: flex;
+  }
+
+  .delete-confirm-modal {
+    position: relative;
+    width: min(100%, 520px);
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 28px 24px 24px;
+    box-shadow: var(--shadow);
+  }
+
+  .delete-confirm-modal h2 {
+    color: var(--text);
+    margin: 6px 0 12px;
+    font-size: clamp(1.6rem, 3vw, 2.2rem);
+  }
+
+  .delete-description {
+    color: var(--muted);
+    line-height: 1.8;
+    margin-bottom: 18px;
+  }
+
+  .delete-field {
+    display: grid;
+    gap: 10px;
+    margin: 18px 0 22px;
+  }
+
+  .delete-field label {
+    font-weight: 700;
+    color: var(--text);
+  }
+
+  .delete-field input {
+    width: 100%;
+    padding: 15px 16px;
+    border-radius: 16px;
+    border: 1px solid var(--border);
+    background: rgba(15, 23, 42, 0.02);
+    color: var(--text);
+    font-size: 1rem;
+  }
+
+  html[data-theme="dark"] .delete-field input {
+    background: rgba(15, 23, 42, 0.7);
+    border-color: var(--border);
+  }
+
+  .delete-actions {
+    display: flex;
+    justify-content: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+    margin-top: 18px;
+  }
+
+  .ghost-button {
+    padding: 15px 20px;
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    background: transparent;
+    color: var(--text);
+    font-weight: 700;
+    cursor: pointer;
+    transition: transform 0.2s ease, background-color 0.2s ease, border-color 0.2s ease;
+  }
+
+  .ghost-button:hover,
+  .ghost-button:focus-visible {
+    background: rgba(148, 163, 184, 0.08);
+    transform: translateY(-1px);
+  }
+
+  .delete-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    width: 36px;
+    height: 36px;
+    border: 1px solid var(--border);
+    border-radius: 50%;
+    background: transparent;
+    color: var(--text);
+    font-size: 1.6rem;
+    line-height: 1;
+    cursor: pointer;
+  }
+
+  @media (max-width: 760px) {
+    .delete-actions {
+      flex-direction: column-reverse;
+    }
+
+    .delete-actions .danger-button,
+    .delete-actions .ghost-button {
+      width: 100%;
+    }
+
+    .delete-confirm-modal {
+      padding: 24px 18px 18px;
+    }
   }
 
   @media (max-width: 1180px) {
@@ -643,6 +795,11 @@
 
     .security-header {
       flex-direction: column;
+      align-items: stretch;
+    }
+
+    .user-summary-card {
+      width: 100%;
     }
 
     .profile-nav {
@@ -655,6 +812,12 @@
 
     .info-card .info-grid {
       grid-template-columns: 1fr;
+    }
+
+    .metric-item,
+    .info-row {
+      flex-direction: column;
+      align-items: flex-start;
     }
   }
 
@@ -677,6 +840,51 @@
     .security-grid {
       gap: 18px;
     }
+
+    .user-summary-card {
+      flex-direction: column;
+      align-items: flex-start;
+    }
   }
 </style>
+
+<script>
+  (function () {
+    const overlay = document.getElementById('delete-confirm-overlay');
+    if (!overlay) return;
+
+    const openButtons = document.querySelectorAll('[data-delete-modal-open="true"]');
+    const closeButtons = document.querySelectorAll('[data-delete-modal-close="true"]');
+
+    function setModalOpen(isOpen) {
+      overlay.classList.toggle('active', isOpen);
+      overlay.setAttribute('aria-hidden', String(!isOpen));
+      document.body.style.overflow = isOpen ? 'hidden' : '';
+    }
+
+    openButtons.forEach((button) => {
+      button.addEventListener('click', function () {
+        setModalOpen(true);
+      });
+    });
+
+    closeButtons.forEach((button) => {
+      button.addEventListener('click', function () {
+        setModalOpen(false);
+      });
+    });
+
+    overlay.addEventListener('click', function (event) {
+      if (event.target === overlay) {
+        setModalOpen(false);
+      }
+    });
+
+    document.addEventListener('keydown', function (event) {
+      if (event.key === 'Escape' && overlay.classList.contains('active')) {
+        setModalOpen(false);
+      }
+    });
+  })();
+</script>
 {% endblock %}

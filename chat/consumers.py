@@ -184,6 +184,9 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     @database_sync_to_async
     def serialize_message(self, message):
+        user = self.scope["user"]
+        is_mine = message.sender_id == user.id
+        can_delete = is_mine and not message.is_deleted and timezone.now() <= message.created_at + timezone.timedelta(minutes=15)
         payload = {
             "id": message.id,
             "sender_id": message.sender_id,
@@ -194,6 +197,8 @@ class ChatConsumer(AsyncWebsocketConsumer):
             "message_type": message.message_type,
             "created_at": message.created_at.isoformat(),
             "reply_to": None,
+            "is_mine": is_mine,
+            "can_delete": can_delete,
         }
         if message.reply_to_id:
             payload["reply_to"] = {

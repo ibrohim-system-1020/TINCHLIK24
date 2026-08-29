@@ -1,0 +1,40 @@
+{% extends 'base.html' %}
+{% block title %}Mening sotuvlarim{% endblock %}
+{% block content %}
+<section class="my-listings section-wrap">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">Sotuvlar</span>
+      <h2>Mening e'lonlarim</h2>
+    </div>
+    <a href="{% url 'market:create_listing' %}" class="btn btn-primary">+ Yangi e'lon</a>
+  </div>
+
+  <div class="listings-grid">
+    {% for item in listings %}
+      <article class="listing-card">
+        <a href="{% url 'market:listing_detail' item.pk %}">
+          {% if item.images.all|length > 0 %}
+            <img src="{{ item.images.all.0.image.url }}" alt="{{ item.title }}" />
+          {% endif %}
+          <div class="listing-body">
+            <h3>{{ item.title }}</h3>
+            <div class="meta">
+              <span class="price">{{ item.price }} so'm</span>
+              <span class="status">{{ item.get_status_display }}</span>
+            </div>
+          </div>
+        </a>
+        <div class="card-actions">
+          <a href="{% url 'market:listing_detail' item.pk %}" class="btn">Ko'rish</a>
+          <a href="{% url 'market:edit_listing' item.pk %}" class="btn">Tahrirlash</a>
+          <a href="{% url 'market:mark_sold' item.pk %}" class="btn">Sotildi deb belgilash</a>
+          <a href="{% url 'market:delete_listing' item.pk %}" class="btn btn-danger">O'chirish</a>
+        </div>
+      </article>
+    {% empty %}
+      <div class="empty-state">Sizda e'lon yo'q.</div>
+    {% endfor %}
+  </div>
+</section>
+{% endblock %}

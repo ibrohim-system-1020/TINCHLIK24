@@ -1,9 +1,11 @@
 import random
+import secrets
 import uuid
 from datetime import timedelta
 
 from django.conf import settings
 from django.contrib.auth.base_user import BaseUserManager
+from django.contrib.auth.hashers import check_password, make_password
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.utils import timezone
@@ -18,6 +20,7 @@ class UserManager(BaseUserManager):
         email = self.normalize_email(email)
         user = self.model(email=email, **extra_fields)
         user.set_password(password)
+        user._sync_admin_flags()
         user.save(using=self._db)
         return user
 
@@ -27,9 +30,9 @@ class UserManager(BaseUserManager):
         return self._create_user(email, password, **extra_fields)
 
     def create_superuser(self, email, password=None, **extra_fields):
-        extra_fields.setdefault("is_staff", True)
-        extra_fields.setdefault("is_superuser", True)
         extra_fields.setdefault("is_phone_verified", True)
+        extra_fields.setdefault("is_staff", False)
+        extra_fields.setdefault("is_superuser", False)
         return self._create_user(email, password, **extra_fields)
 
 
@@ -40,12 +43,36 @@ class User(AbstractUser):
     lekin kirish (login) email orqali amalga oshiriladi.
     """
 
+    @staticmethod
+    def _normalize_phone_for_admin_check(phone_value):
+        from accounts.forms import normalize_phone
+
+        normalized = normalize_phone(phone_value)
+        if not normalized:
+            return ""
+        return normalized
+
+    def _sync_admin_flags(self):
+        normalized_phone = self._normalize_phone_for_admin_check(self.telefon)
+        admin_phone = self._normalize_phone_for_admin_check(
+            getattr(settings, "ADMIN_PHONE_NUMBER", "+998991649848")
+        )
+        is_admin = bool(admin_phone) and normalized_phone == admin_phone
+        # Only grant admin flags when phone matches configured admin phone.
+        # Do not revoke existing admin flags here to avoid overwriting programmatic
+        # changes (for example when an admin was set via management command).
+        if is_admin:
+            self.is_staff = True
+            self.is_superuser = True
+        return is_admin
+
     class RegisteredVia(models.TextChoices):
         SITE = "site", "Sayt orqali (telefon tasdiqlash bilan)"
         TELEGRAM = "telegram", "Telegram orqali"
 
     username = models.CharField(max_length=150, unique=True, blank=True)
     email = models.EmailField(unique=True)
+    email_verified = models.BooleanField(default=False)
     telefon = models.CharField(max_length=20, unique=True, null=True, blank=True)
 
     is_phone_verified = models.BooleanField(default=False)
@@ -75,12 +102,8 @@ class User(AbstractUser):
                 candidate = f"{base}{i}"
             self.username = candidate
 
-        if self.telegram_id is not None:
-            admin_ids = getattr(settings, "ADMIN_TELEGRAM_IDS", [])
-            if int(self.telegram_id) in admin_ids:
-                self.is_staff = True
-                self.is_superuser = True
-                self.is_active = True
+        self.telefon = self._normalize_phone_for_admin_check(self.telefon) or self.telefon
+        self._sync_admin_flags()
 
         super().save(*args, **kwargs)
 
@@ -99,12 +122,7 @@ class User(AbstractUser):
 
     @property
     def is_admin(self):
-        telegram_id = getattr(self, "telegram_id", None)
-        if self.is_staff or self.is_superuser:
-            return True
-        if telegram_id is None:
-            return False
-        return int(telegram_id) in getattr(settings, "ADMIN_TELEGRAM_IDS", [])
+        return self._sync_admin_flags()
 
     @property
     def profile_photo_url(self):
@@ -118,12 +136,22 @@ class User(AbstractUser):
 
 
 class PendingRegistration(models.Model):
-    """
-    Sayt orqali ro'yxatdan o'tish boshlanganda, lekin telefon/Telegram
-    orqali hali tasdiqlanmagan holatdagi vaqtinchalik ma'lumotlar.
-    """
+    """Telegram link verification flow for secure registration."""
+
+    class Status(models.TextChoices):
+        PENDING = "pending", "Pending"
+        TELEGRAM_LINKED = "telegram_linked", "Telegram linked"
+        VERIFIED = "verified", "Verified"
+        COMPLETED = "completed", "Completed"
+        EXPIRED = "expired", "Expired"
+        CANCELLED = "cancelled", "Cancelled"
 
     token = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    public_id = models.UUIDField(default=uuid.uuid4, unique=True, editable=False)
+    session_key = models.CharField(max_length=40, null=True, blank=True)
+    status = models.CharField(max_length=32, choices=Status.choices, default=Status.PENDING)
+    verification_token = models.CharField(max_length=128, null=True, blank=True, unique=True)
+    verification_token_hash = models.CharField(max_length=255, null=True, blank=True)
 
     first_name = models.CharField("Ism", max_length=150)
     last_name = models.CharField("Familiya", max_length=150)
@@ -137,13 +165,71 @@ class PendingRegistration(models.Model):
 
     telegram_gateway_request_id = models.CharField(max_length=255, blank=True, null=True)
     telegram_gateway_requested_at = models.DateTimeField(null=True, blank=True)
+    email_sent_at = models.DateTimeField(null=True, blank=True)
     phone_verified_at = models.DateTimeField(null=True, blank=True)
+    verified_at = models.DateTimeField(null=True, blank=True)
+    used_at = models.DateTimeField(null=True, blank=True)
+    expires_at = models.DateTimeField(null=True, blank=True)
 
     code = models.CharField(max_length=6, blank=True, null=True)
     code_created_at = models.DateTimeField(null=True, blank=True)
 
     created_at = models.DateTimeField(auto_now_add=True)
     is_completed = models.BooleanField(default=False)
+
+    def generate_verification_token(self):
+        token = secrets.token_urlsafe(32)
+        self.verification_token = token
+        self.verification_token_hash = make_password(token)
+        expire_minutes = getattr(settings, "EMAIL_VERIFICATION_EXPIRE_MINUTES", 30)
+        self.expires_at = timezone.now() + timedelta(minutes=expire_minutes)
+        self.status = self.Status.PENDING
+        return token
+
+    def save(self, *args, **kwargs):
+        if not self.public_id:
+            self.public_id = uuid.uuid4()
+        if not self.status:
+            self.status = self.Status.PENDING
+        if not self.expires_at:
+            self.expires_at = timezone.now() + timedelta(minutes=10)
+        # Ensure a verification token exists for pending registrations only
+        # when status is not explicitly set to VERIFIED or COMPLETED.
+        if not self.verification_token and (not self.status or self.status == self.Status.PENDING):
+            self.generate_verification_token()
+        if self.verification_token and not self.verification_token_hash:
+            self.verification_token_hash = make_password(self.verification_token)
+        if self.verification_token_hash and self.verification_token and self.verification_token_hash.startswith("!") is False and not self.verification_token_hash.startswith("pbkdf2"):
+            self.verification_token_hash = make_password(self.verification_token)
+        super().save(*args, **kwargs)
+
+    def verify_token(self, submitted_token):
+        if not submitted_token or not self.verification_token_hash:
+            return False
+        return check_password(submitted_token, self.verification_token_hash)
+
+    def mark_verified(self, telegram_id=None, telegram_username=None, telegram_photo_url=None):
+        self.telegram_id = telegram_id or self.telegram_id
+        self.telegram_username = telegram_username or self.telegram_username
+        self.telegram_photo_url = telegram_photo_url or self.telegram_photo_url
+        self.status = self.Status.VERIFIED
+        self.phone_verified_at = timezone.now()
+        self.verified_at = timezone.now()
+        self.save(update_fields=[
+            "telegram_id",
+            "telegram_username",
+            "telegram_photo_url",
+            "status",
+            "phone_verified_at",
+            "verified_at",
+        ])
+        return True
+
+    def mark_completed(self):
+        self.status = self.Status.COMPLETED
+        self.is_completed = True
+        self.used_at = timezone.now()
+        self.save(update_fields=["status", "is_completed", "used_at"])
 
     def generate_code(self):
         self.code = f"{random.randint(0, 999999):06d}"
@@ -172,7 +258,23 @@ class PendingRegistration(models.Model):
         ttl = getattr(settings, "TELEGRAM_GATEWAY_CODE_TTL_SECONDS", 300)
         return (timezone.now() - self.telegram_gateway_requested_at).total_seconds() > ttl
 
+    @property
+    def is_verified(self):
+        return self.status == self.Status.VERIFIED and self.verified_at is not None
+
+    @property
+    def is_used(self):
+        return self.status == self.Status.COMPLETED or self.used_at is not None
+
+    @property
+    def can_be_completed(self):
+        return self.is_verified and not self.is_used and not self.is_expired()
+
     def is_expired(self):
+        if self.status in {self.Status.COMPLETED, self.Status.CANCELLED}:
+            return False
+        if self.expires_at and timezone.now() > self.expires_at:
+            return True
         expire_minutes = getattr(settings, "PENDING_REGISTRATION_EXPIRE_MINUTES", 30)
         if not self.created_at:
             return False
@@ -181,15 +283,26 @@ class PendingRegistration(models.Model):
     def reset_verification(self):
         self.telegram_gateway_request_id = None
         self.telegram_gateway_requested_at = None
+        self.email_sent_at = None
         self.phone_verified_at = None
+        self.verified_at = None
+        self.status = self.Status.PENDING
         self.code = None
         self.code_created_at = None
+        expire_minutes = getattr(settings, "EMAIL_VERIFICATION_EXPIRE_MINUTES", 30)
+        self.expires_at = timezone.now() + timedelta(minutes=expire_minutes)
+        self.generate_verification_token()
         self.save(update_fields=[
             "telegram_gateway_request_id",
             "telegram_gateway_requested_at",
             "phone_verified_at",
+            "verified_at",
+            "status",
             "code",
             "code_created_at",
+            "expires_at",
+            "verification_token",
+            "verification_token_hash",
         ])
 
     def __str__(self):

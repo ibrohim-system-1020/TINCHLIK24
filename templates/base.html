@@ -25,8 +25,16 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
 
-    <title>TINCHLIK | MFY</title>
+    <title>{% block title %}TINCHLIK | MFY{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
+    {% if user.is_authenticated %}
+      <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
+    {% endif %}
+
+    <!-- Favicon: use static system and cache-bust to avoid stale browser cache -->
+    <link rel="icon" type="image/png" href="{% static 'images/fav.png' %}?v=2">
+    <link rel="shortcut icon" href="{% static 'images/fav.png' %}?v=2">
+    <link rel="apple-touch-icon" href="{% static 'images/fav.png' %}?v=2">
 
     <style>
       * {
@@ -36,9 +44,20 @@
         font-family: Arial, sans-serif;
       }
 
+      html, body {
+        max-width: 100%;
+      }
+
       body {
+        min-height: 100dvh;
         background: var(--bg);
         color: var(--text);
+        overflow-x: hidden;
+      }
+
+      img, svg, video, canvas, iframe {
+        max-width: 100%;
+        height: auto;
       }
 
       /* AUTH BUTTON STYLE
@@ -81,7 +100,7 @@
 
         z-index: 99999;
 
-        padding: 20px;
+        padding: clamp(12px, 3vw, 20px);
       }
 
       .auth-overlay.active {
@@ -90,17 +109,17 @@
 
       /* MODAL */
       .auth-modal {
-        width: 100%;
+        width: min(100%, 470px);
         max-width: 470px;
 
         background: var(--surface);
         border-radius: 22px;
 
-        padding: 30px;
+        padding: clamp(22px, 4vw, 30px);
 
         position: relative;
 
-        max-height: 92vh;
+        max-height: min(92vh, 820px);
         overflow-y: auto;
 
         box-shadow: var(--shadow);
@@ -229,7 +248,7 @@
 
       .form-row {
         display: grid;
-        grid-template-columns: 1fr 1fr;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
         gap: 12px;
       }
 
@@ -250,6 +269,7 @@
 
       .input-box input {
         width: 100%;
+        min-height: 48px;
 
         padding: 14px;
 
@@ -330,6 +350,7 @@
       /* MAIN BUTTON */
       .auth-submit {
         width: 100%;
+        min-height: 48px;
 
         padding: 14px;
 
@@ -379,6 +400,7 @@
       /* TELEGRAM */
       .telegram-btn {
         width: 100%;
+        min-height: 48px;
 
         padding: 14px;
 
@@ -457,15 +479,13 @@
         color: #555;
 
         font-size: 13px;
-            transition: color 0.25s ease, opacity 0.25s ease;
+        transition: color 0.25s ease, opacity 0.25s ease;
       }
 
       .forgot-password:hover,
       .forgot-password:focus-visible {
-            color: #111;
-            opacity: 0.9;
-          gap: 0;
-        }
+        color: #111;
+        opacity: 0.9;
       }
 
       .auth-messages {
@@ -475,6 +495,7 @@
       .auth-message {
         display: flex;
         align-items: center;
+        flex-wrap: wrap;
 
         gap: 10px;
 
@@ -486,6 +507,7 @@
         font-weight: 600;
 
         margin-bottom: 10px;
+        overflow-wrap: anywhere;
       }
 
       .auth-message.error {
@@ -512,6 +534,42 @@
         border-radius: 50%;
 
         font-weight: bold;
+        flex-shrink: 0;
+      }
+
+      @media (max-width: 640px) {
+        .auth-overlay {
+          padding: 12px;
+        }
+
+        .auth-modal {
+          width: min(100%, 100%);
+          border-radius: 18px;
+          max-height: 92dvh;
+        }
+
+        .form-row {
+          grid-template-columns: 1fr;
+        }
+
+        .auth-header h2 {
+          font-size: clamp(1.4rem, 5vw, 1.9rem);
+        }
+
+        .auth-tabs {
+          grid-template-columns: 1fr 1fr;
+        }
+      }
+
+      @media (orientation: landscape) and (max-height: 500px) {
+        .auth-overlay {
+          align-items: flex-start;
+          padding-top: 12px;
+        }
+
+        .auth-modal {
+          max-height: 84dvh;
+        }
       }
 
       .auth-message.error .status-icon {
@@ -672,16 +730,7 @@
 
           <div class="auth-or">YOKI</div>
 
-          <button type="button" class="telegram-btn" id="telegramRegister">
-            <span class="telegram-icon"> ✈ </span>
-
-            Telegram orqali ro'yxatdan o'tish
-          </button>
         </form>
-
-        <!-- =========================
-                 LOGIN
-            ========================== -->
 
         <form
           class="auth-form {% if request.GET.tab == 'login' %}active{% endif %}"
@@ -727,59 +776,7 @@
           <a href="#" class="forgot-password"> Parolni unutdingizmi? </a>
 
           <button type="submit" class="auth-submit">KIRISH</button>
-
-          <div class="auth-or">YOKI</div>
-
-          <button type="button" class="telegram-btn">
-            <span class="telegram-icon"> ✈ </span>
-
-            Telegram orqali kirish
-          </button>
         </form>
-
-        <!-- =========================
-                 TELEGRAM VERIFICATION
-            ========================== -->
-
-        <div class="telegram-verification" id="telegramVerification">
-          <div class="verification-info">
-            Telegramdagi
-            <strong> TINCHLIK | MFY Verification </strong>
-            botiga yuborilgan tasdiqlash kodini kiriting.
-          </div>
-
-          <div class="input-box">
-            <label> Telefon raqam </label>
-
-            <input
-              type="tel"
-              id="telegramPhone"
-              placeholder="+998 90 123 45 67"
-            />
-          </div>
-
-          <button type="button" class="telegram-btn" id="sendTelegramCode">
-            ✈ Tasdiqlash kodini yuborish
-          </button>
-
-          <div style="height: 15px"></div>
-
-          <div class="input-box">
-            <label> Tasdiqlash kodi </label>
-
-            <input
-              type="text"
-              id="telegramCode"
-              class="verify-code"
-              maxlength="6"
-              placeholder="000000"
-            />
-          </div>
-
-          <button type="button" class="auth-submit" id="verifyTelegramCode">
-            TASDIQLASH
-          </button>
-        </div>
       </div>
     </div>
 
@@ -804,6 +801,90 @@
 
     {% endif %}
 
+    <!-- AUTHENTICATED NAVBAR -->
+    {% if user.is_authenticated %}
+    <nav class="topbar" role="navigation" aria-label="Mahalla kabineti navigatsiyasi">
+      <div class="brand">
+        <a href="{% url 'home' %}" class="logo-link" aria-label="Bosh sahifa">
+          <img src="{% static 'images/fav.png' %}" alt="TINCHLIK logotipi" class="brand-logo" />
+        </a>
+        <div class="brand-text">
+          <div class="brand-title">TINCHLIK</div>
+          <div class="brand-sub">Mahalla platformasi</div>
+        </div>
+      </div>
+
+      <div class="nav-links" role="menubar" aria-label="Asosiy menyu">
+        <a class="nav-link" href="{% url 'home' %}"><span class="icon">🏠</span><span>Bosh sahifa</span></a>
+        <a class="nav-link" href="{% url 'home' %}#services"><span class="icon">🛎️</span><span>Mahalla xizmatlari</span></a>
+        <a class="nav-link" href="{% url 'market:listings' %}"><span class="icon">🛍️</span><span>Mahalla bozori</span></a>
+        <a class="nav-link" href="{% url 'market:my_listings' %}"><span class="icon">📦</span><span>Mening sotuvlarim</span></a>
+        <a class="nav-link" href="{% url 'accounts:profile' %}"><span class="icon">📩</span><span>Murojaatlarim</span></a>
+        <a class="nav-link" href="{% url 'chat:chat' %}"><span class="icon">💬</span><span>Chat</span></a>
+        <a class="nav-link" href="{% url 'home' %}#updates"><span class="icon">📰</span><span>Yangiliklar</span></a>
+      </div>
+
+      <div class="nav-actions">
+            <button class="hamburger" type="button" aria-label="Menyu" aria-expanded="false">☰</button>
+
+        <div class="avatar-wrap">
+          <button class="avatar-button" type="button" aria-haspopup="true" aria-expanded="false">
+            {% if user.profile_photo_url %}
+              <img src="{{ user.profile_photo_url }}" alt="Profil rasmi" class="avatar-img">
+            {% else %}
+              <div class="avatar-fallback">{{ user.first_name|default:user.email|slice:':1' }}{{ user.last_name|default:''|slice:':1' }}</div>
+            {% endif %}
+            <span class="avatar-name">{{ user.first_name|default:user.email }}</span>
+          </button>
+
+          <div class="profile-dropdown" role="menu" aria-label="Foydalanuvchi menyusi">
+            <div class="profile-summary">
+              {% if user.profile_photo_url %}
+                <img src="{{ user.profile_photo_url }}" alt="Profil rasmi" class="avatar-img">
+              {% else %}
+                <div class="avatar-fallback">{{ user.first_name|default:user.email|slice:':1' }}{{ user.last_name|default:''|slice:':1' }}</div>
+              {% endif %}
+              <div class="meta">
+                <div class="name">{{ user.get_full_name|default:user.email }}</div>
+                {% if user.telefon %}<div class="sub">{{ user.telefon }}</div>{% endif %}
+                <div class="sub">{{ user.email }}</div>
+              </div>
+            </div>
+
+            <div class="dropdown-grid">
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">👤</div><div>Profilim</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">📄</div><div>Shaxsiy ma’lumotlar</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">✏️</div><div>Profilni tahrirlash</div></a>
+              <a href="{% url 'market:my_listings' %}" class="dd-item"><div class="dd-icon">📦</div><div>Mening sotuvlarim</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">📩</div><div>Murojaatlarim</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">🔔</div><div>Bildirishnomalar</div></a>
+              <a href="{% url 'accounts:security' %}" class="dd-item"><div class="dd-icon">🔐</div><div>Xavfsizlik</div></a>
+              <a href="{% url 'accounts:security' %}" class="dd-item"><div class="dd-icon">🔑</div><div>Parolni o‘zgartirish</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">⚙️</div><div>Sozlamalar</div></a>
+              <a href="{% url 'home' %}" class="dd-item"><div class="dd-icon">❔</div><div>Yordam</div></a>
+            </div>
+
+            <div class="dd-actions">
+              <a href="{% url 'accounts:logout' %}" class="action-btn logout" role="menuitem">Chiqish</a>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="mobile-panel" aria-hidden="true">
+        <div class="mobile-menu" role="menu">
+          <a class="nav-link" href="{% url 'home' %}"><span class="icon">🏠</span><span>Bosh sahifa</span></a>
+          <a class="nav-link" href="{% url 'home' %}#services"><span class="icon">🛎️</span><span>Mahalla xizmatlari</span></a>
+          <a class="nav-link" href="{% url 'market:listings' %}"><span class="icon">🛍️</span><span>Mahalla bozori</span></a>
+          <a class="nav-link" href="{% url 'market:my_listings' %}"><span class="icon">📦</span><span>Mening sotuvlarim</span></a>
+          <a class="nav-link" href="{% url 'accounts:profile' %}"><span class="icon">�</span><span>Murojaatlarim</span></a>
+          <a class="nav-link" href="{% url 'chat:chat' %}"><span class="icon">💬</span><span>Chat</span></a>
+          <a class="nav-link" href="{% url 'accounts:logout' %}"><span class="icon">🚪</span><span>Chiqish</span></a>
+        </div>
+      </div>
+    </nav>
+    {% endif %}
+
     <!-- SAHIFALAR SHU YERGA KELADI -->
 
     {% block content %} {% endblock %}
@@ -818,9 +899,18 @@
 
       const loginForm = document.getElementById("loginForm");
 
-      const telegramVerification = document.getElementById(
-        "telegramVerification",
-      );
+      if (!overlay || !tabs.length || !registerForm || !loginForm) {
+        window.addEventListener("DOMContentLoaded", function () {
+          const path = window.location.pathname;
+          const params = new URLSearchParams(window.location.search);
+
+          if (path === "/register/" || path === "/register") {
+            if (params.get("tab") === "login") {
+              document.body.classList.add("auth-modal-open");
+            }
+          }
+        });
+      }
 
       /*
     =============================
@@ -835,8 +925,6 @@
         registerForm.classList.add("active");
         loginForm.classList.remove("active");
 
-        telegramVerification.classList.remove("active");
-
         tabs[0].classList.add("active");
         tabs[1].classList.remove("active");
 
@@ -848,8 +936,6 @@
 
         registerForm.classList.remove("active");
         loginForm.classList.add("active");
-
-        telegramVerification.classList.remove("active");
 
         tabs[0].classList.remove("active");
         tabs[1].classList.add("active");
@@ -863,10 +949,14 @@
     =============================
     */
 
-      closeAuth.addEventListener("click", closeModal);
+      if (closeAuth) {
+        closeAuth.addEventListener("click", closeModal);
+      }
 
       function closeModal() {
-        overlay.classList.remove("active");
+        if (overlay) {
+          overlay.classList.remove("active");
+        }
 
         document.body.style.overflow = "";
 
@@ -879,11 +969,13 @@
     =============================
     */
 
-      overlay.addEventListener("click", function (e) {
-        if (e.target === overlay) {
-          closeModal();
-        }
-      });
+      if (overlay) {
+        overlay.addEventListener("click", function (e) {
+          if (e.target === overlay) {
+            closeModal();
+          }
+        });
+      }
 
       /*
     =============================
@@ -918,78 +1010,6 @@
           input.type = "password";
         }
       }
-
-      /*
-    =============================
-    TELEGRAM REGISTER
-    =============================
-    */
-
-      document
-        .getElementById("telegramRegister")
-        .addEventListener("click", function () {
-          registerForm.classList.remove("active");
-          loginForm.classList.remove("active");
-
-          telegramVerification.classList.add("active");
-        });
-
-      /*
-    =============================
-    SEND TELEGRAM CODE
-    =============================
-    */
-
-      document
-        .getElementById("sendTelegramCode")
-        .addEventListener("click", function () {
-          const phone = document.getElementById("telegramPhone").value;
-
-          if (!phone) {
-            alert("Telefon raqamingizni kiriting!");
-
-            return;
-          }
-
-          /*
-                KEYIN DJANGO BACKEND:
-
-                fetch("/api/telegram/send-code/", {
-                    method: "POST"
-                })
-
-                orqali botga:
-
-                Sizning tasdiqlash kodingiz: 482193
-
-                yuboramiz.
-            */
-
-          alert("Tasdiqlash kodi Telegram orqali yuboriladi.");
-        });
-
-      /*
-    =============================
-    VERIFY TELEGRAM CODE
-    =============================
-    */
-
-      document
-        .getElementById("verifyTelegramCode")
-        .addEventListener("click", function () {
-          const code = document.getElementById("telegramCode").value;
-
-          if (code.length !== 6) {
-            alert("6 xonali tasdiqlash kodini kiriting!");
-
-            return;
-          }
-
-          /*
-                KEYIN DJANGO:
-                /api/telegram/verify-code/
-            */
-        });
 
       /*
     =============================
@@ -1028,9 +1048,18 @@
       });
     </script>
 
-    <button id="themeToggle" class="theme-toggle" aria-label="Toggle theme">🌙</button>
-
+    <script src="https://cdn.jsdelivr.net/npm/animejs@3.2.1/lib/anime.min.js"></script>
+    <script>
+      // Ensure anime is available globally; if loading fails, code checks for window.anime.
+      if (typeof window.anime === 'undefined') {
+        console.warn('Anime.js failed to load or is not available. Animations will be skipped.');
+      }
+    </script>
     <script src="{% static 'js/theme.js' %}"></script>
+
+    {% if user.is_authenticated %}
+      <script src="{% static 'js/dashboard.js' %}"></script>
+    {% endif %}
 
     {% block extra_js %} {% endblock %}
   </body>

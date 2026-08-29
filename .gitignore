@@ -1,20 +1,44 @@
-.venv/
-venv/
+# Python
 __pycache__/
-*.pyc
-*.pyo
-
-.env
-.env.*
-
-node_modules/
-
 .pytest_cache/
 .mypy_cache/
 .ruff_cache/
-.cache/
+*.py[cod]
+*.pyo
+*.pyd
+venv/
+.env/
+.venv/
+env/
 
-*.log
-.DS_Store
+# Environment
+.env
+.env.*
+!.env.example
 
+# Django
+db.sqlite3
 staticfiles/
+media/
+
+# Build / cache
+build/
+dist/
+node_modules/
+*.log
+.cache/
+.vercel/
+.vscode/
+.idea/
+
+# OS/editor
+.DS_Store
+Thumbs.db
+
+# Local tooling
+.coverage
+coverage.xml
+htmlcov/
+
+# Optional package cache
+pip-wheel-metadata/

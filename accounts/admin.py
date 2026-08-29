@@ -1,7 +1,7 @@
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from .models import AdminAuditLog, User, LoginHistory, PendingRegistration
+from .models import AdminAuditLog, User, LoginHistory
 
 
 @admin.register(User)
@@ -25,11 +25,6 @@ class UserAdmin(DjangoUserAdmin):
 class LoginHistoryAdmin(admin.ModelAdmin):
     list_display = ("user", "logged_in_at", "ip_address")
     list_filter = ("logged_in_at",)
-
-
-@admin.register(PendingRegistration)
-class PendingRegistrationAdmin(admin.ModelAdmin):
-    list_display = ("email", "telefon", "created_at", "is_completed")
 
 
 @admin.register(AdminAuditLog)

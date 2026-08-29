@@ -4,10 +4,6 @@ document.addEventListener("DOMContentLoaded", function () {
   const tabs = document.querySelectorAll(".auth-tab");
   const registerForm = document.getElementById("registerForm");
   const loginForm = document.getElementById("loginForm");
-  const telegramVerification = document.getElementById("telegramVerification");
-  const telegramRegister = document.getElementById("telegramRegister");
-  const sendTelegramCode = document.getElementById("sendTelegramCode");
-  const verifyTelegramCode = document.getElementById("verifyTelegramCode");
 
   function openRegister() {
     if (!overlay || !registerForm || !loginForm) return;
@@ -15,7 +11,6 @@ document.addEventListener("DOMContentLoaded", function () {
     overlay.classList.add("active");
     registerForm.classList.add("active");
     loginForm.classList.remove("active");
-    telegramVerification?.classList.remove("active");
     tabs[0]?.classList.add("active");
     tabs[1]?.classList.remove("active");
     document.body.style.overflow = "hidden";
@@ -27,7 +22,6 @@ document.addEventListener("DOMContentLoaded", function () {
     overlay.classList.add("active");
     registerForm.classList.remove("active");
     loginForm.classList.add("active");
-    telegramVerification?.classList.remove("active");
     tabs[0]?.classList.remove("active");
     tabs[1]?.classList.add("active");
     document.body.style.overflow = "hidden";
@@ -62,34 +56,6 @@ document.addEventListener("DOMContentLoaded", function () {
       }
     });
   });
-
-  if (telegramRegister) {
-    telegramRegister.addEventListener("click", function () {
-      registerForm?.classList.remove("active");
-      loginForm?.classList.remove("active");
-      telegramVerification?.classList.add("active");
-    });
-  }
-
-  if (sendTelegramCode) {
-    sendTelegramCode.addEventListener("click", function () {
-      const phone = document.getElementById("telegramPhone")?.value;
-      if (!phone) {
-        alert("Telefon raqamingizni kiriting!");
-        return;
-      }
-      alert("Tasdiqlash kodi Telegram orqali yuboriladi.");
-    });
-  }
-
-  if (verifyTelegramCode) {
-    verifyTelegramCode.addEventListener("click", function () {
-      const code = document.getElementById("telegramCode")?.value;
-      if (!code || code.length !== 6) {
-        alert("6 xonali tasdiqlash kodini kiriting!");
-      }
-    });
-  }
 
   window.showPassword = function (id) {
     const input = document.getElementById(id);

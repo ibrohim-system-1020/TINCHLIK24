@@ -1,4 +1,14 @@
-from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+try:
+    from telegram import InlineKeyboardButton, InlineKeyboardMarkup
+except Exception:
+    class InlineKeyboardButton:
+        def __init__(self, text, callback_data=None):
+            self.text = text
+            self.callback_data = callback_data
+
+    class InlineKeyboardMarkup:
+        def __init__(self, buttons):
+            self.inline_keyboard = buttons
 
 
 def normal_user_menu_keyboard():

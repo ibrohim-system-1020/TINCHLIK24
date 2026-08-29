@@ -1,0 +1,45 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+<link rel="stylesheet" href="{% static 'css/market.css' %}">
+{% block title %}{{ listing.title }} — E'lon{% endblock %}
+{% block content %}
+<section class="listing-detail section-wrap">
+  <div class="detail-grid">
+    <div class="gallery">
+      {% if images %}
+        <div class="main-image-wrap">
+          <img src="{{ images.0.image.url }}" alt="{{ listing.title }}" class="main-img" id="main-image" />
+        </div>
+        <div class="thumbs">
+          {% for img in images %}
+            <button class="thumb" data-src="{{ img.image.url }}" aria-label="Thumbnail {{ forloop.counter }}">
+              <img src="{{ img.image.url }}" alt="{{ listing.title }} thumbnail {{ forloop.counter }}" />
+            </button>
+          {% endfor %}
+        </div>
+      {% endif %}
+    </div>
+    <div class="detail-info">
+      <h1>{{ listing.title }}</h1>
+      <p class="price">{{ listing.price|intcomma }} so'm {% if listing.negotiable %}(Kelishiladi){% endif %}</p>
+      <p class="cond">{{ listing.get_condition_display }}</p>
+      <p class="desc">{{ listing.description }}</p>
+      <div class="seller-card">
+        <h3>Sotuvchi</h3>
+        <div class="seller-meta">
+          <div class="seller-avatar">{% if listing.seller.avatar %}<img src="{{ listing.seller.avatar.url }}" alt="{{ listing.seller.get_full_name }}" />{% endif %}</div>
+          <div>
+            <p class="seller-name">{{ listing.seller.full_name|default:listing.seller.email }}</p>
+            {% if listing.seller.neighborhood %}<p class="seller-location">{{ listing.seller.neighborhood }}</p>{% endif %}
+            <div class="seller-actions">
+              <a href="{% url 'chat:chat' %}" class="btn btn-primary">Yozish</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+<script src="{% static 'js/market.js' %}"></script>
+{% endblock %}

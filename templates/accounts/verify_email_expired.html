@@ -1,0 +1,12 @@
+{% extends "base.html" %}
+
+{% block title %}TINCHLIK | Havola muddati tugagan{% endblock %}
+
+{% block content %}
+<h2>Havolaning muddati tugagan</h2>
+<p>Bu tasdiqlash havolasi muddati o'tgan. Yangi tasdiqlash xatini so'rash uchun quyidagi tugmani bosing.</p>
+<form method="post" action="{% url 'accounts:resend_verification' pending.token %}">
+  {% csrf_token %}
+  <button type="submit">Yangi tasdiqlash xatini yuborish</button>
+</form>
+{% endblock %}

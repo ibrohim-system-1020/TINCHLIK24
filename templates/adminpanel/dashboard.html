@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="admin-dashboard">
+  <h1>Admin Dashboard</h1>
+  <div class="stats">
+    <div>Total users: {{ total_users }}</div>
+    <div>Today registrations: {{ todays_users }}</div>
+    <div>Online users: {{ online_users }}</div>
+    <div>Blocked users: {{ blocked }}</div>
+    <div>Users with warnings: {{ spammed }}</div>
+    <div>Total posts: {{ total_posts }}</div>
+    <div>Today's posts: {{ todays_posts }}</div>
+    <div>Total chat messages: {{ total_chat }}</div>
+    <div>Open reports: {{ reports_count }}</div>
+    <div>Unverified users: {{ unverified }}</div>
+  </div>
+
+  <h2>Recent registrations</h2>
+  <ul>
+    {% for u in recent_users %}
+      <li>{{ u.get_full_name }} ({{ u.email }})</li>
+    {% endfor %}
+  </ul>
+
+  <h2>Recently active</h2>
+  <ul>
+    {% for u in recent_active %}
+      <li>{{ u.get_full_name }} (last login: {{ u.last_login }})</li>
+    {% endfor %}
+  </ul>
+</div>
+{% endblock %}

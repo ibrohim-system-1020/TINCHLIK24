@@ -1,9 +1,20 @@
 :root {
     --brand: #2f6fed;
     --bg: #f4f6fb;
+    --surface: #ffffff;
+    --surface-strong: #f5f7fb;
     --text: #1c1f26;
     --muted: #6b7280;
     --border: #e2e5eb;
+}
+
+html[data-theme="dark"] {
+    --bg: #0b1220;
+    --surface: #111827;
+    --surface-strong: #172235;
+    --text: #f8fafc;
+    --muted: #94a3b8;
+    --border: rgba(148, 163, 184, 0.18);
 }
 
 * { box-sizing: border-box; }
@@ -13,6 +24,7 @@ body {
     font-family: "Segoe UI", Tahoma, Arial, sans-serif;
     background: var(--bg);
     color: var(--text);
+    transition: background-color 0.18s ease, color 0.18s ease;
 }
 
 .site-header {
@@ -20,8 +32,9 @@ body {
     align-items: center;
     justify-content: space-between;
     padding: 14px 32px;
-    background: #fff;
+    background: var(--surface);
     border-bottom: 1px solid var(--border);
+    transition: background-color 0.18s ease, border-color 0.18s ease;
 }
 
 .logo { font-weight: 700; font-size: 20px; color: var(--brand); text-decoration: none; }
@@ -37,6 +50,7 @@ body {
     border-radius: 8px;
     font-weight: 600;
     cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 
 .kirish-menu {
@@ -44,13 +58,14 @@ body {
     position: absolute;
     right: 0;
     top: calc(100% + 8px);
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 10px;
-    box-shadow: 0 10px 30px rgba(0,0,0,.12);
+    box-shadow: 0 10px 30px rgba(15, 23, 42, 0.12);
     min-width: 200px;
     overflow: hidden;
     z-index: 50;
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease;
 }
 
 .kirish-menu.open { display: block; }
@@ -62,19 +77,20 @@ body {
     text-decoration: none;
     font-size: 15px;
     border-bottom: 1px solid var(--border);
-    transition: background-color 0.25s ease, color 0.25s ease, transform 0.25s ease;
+    transition: background-color 0.2s ease, color 0.2s ease, transform 0.2s ease, border-color 0.2s ease;
 }
 .kirish-menu a:last-child { border-bottom: none; }
 .kirish-menu a:hover,
-.kirish-menu a:focus-visible { background: var(--bg); transform: translateX(2px); }
+.kirish-menu a:focus-visible { background: var(--surface-strong); transform: translateX(2px); }
 
 .container { max-width: 480px; margin: 40px auto; padding: 0 16px; }
 
 .card {
-    background: #fff;
+    background: var(--surface);
     border: 1px solid var(--border);
     border-radius: 14px;
     padding: 28px;
+    transition: background-color 0.18s ease, border-color 0.18s ease, box-shadow 0.18s ease, transform 0.18s ease;
 }
 
 .card h1 { font-size: 22px; margin-top: 0; }
@@ -86,6 +102,9 @@ body {
     border-radius: 8px;
     margin-bottom: 4px;
     font-size: 15px;
+    background: var(--surface);
+    color: var(--text);
+    transition: border-color 0.18s ease, box-shadow 0.18s ease, background-color 0.18s ease, color 0.18s ease;
 }
 
 .field { margin-bottom: 16px; }
@@ -105,9 +124,10 @@ body {
     font-weight: 600;
     font-size: 15px;
     cursor: pointer;
+    transition: transform 0.15s ease, background-color 0.18s ease, box-shadow 0.18s ease, opacity 0.18s ease;
 }
 .btn.telegram { background: #229ED9; margin-top: 10px; text-align: center; text-decoration: none; display: block; }
-.btn.secondary { background: #fff; color: var(--brand); border: 1px solid var(--brand); }
+.btn.secondary { background: var(--surface); color: var(--brand); border: 1px solid var(--brand); }
 
 .divider { text-align: center; color: var(--muted); margin: 18px 0; font-size: 13px; }
 

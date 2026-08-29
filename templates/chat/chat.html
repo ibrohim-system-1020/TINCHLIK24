@@ -1,10 +1,13 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block content %}
-<link rel="stylesheet" href="{% static 'css/chat.css' %}" />
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
 
-<div class="chat-page">
+{% block content %}
+
+<div id="chatRoot" class="chat-page" data-current-user-id="{{ request.user.id }}">
   <div class="chat-shell">
     <header class="chat-header">
       <div>
@@ -26,19 +29,31 @@
 
     <div id="typing-indicator" class="typing-indicator hidden" aria-live="polite"></div>
 
-    <form id="chat-form" class="chat-composer" autocomplete="off">
+    <div class="chat-composer" id="chatComposer" data-send-url="{% url 'chat:send_message' %}">
       <div id="reply-preview" class="reply-preview hidden"></div>
       <div class="composer-row">
         <button type="button" id="image-button" class="icon-button" aria-label="Rasm yuborish">🖼️</button>
         <button type="button" id="audio-button" class="icon-button" aria-label="Ovozli xabar">🎙️</button>
-        <input id="chat-input" type="text" maxlength="2000" placeholder="Xabar yozing..." aria-label="Xabar matni" />
-        <button type="submit" class="send-button">Yuborish</button>
+        <textarea
+          id="chatMessageInput"
+          class="chat-message-input"
+          rows="1"
+          maxlength="4000"
+          placeholder="Xabar yozing..."
+          aria-label="Xabar yozing"
+          autocomplete="off"
+        ></textarea>
+        <button id="chatSendButton" type="button" class="chat-send-button" aria-label="Xabarni yuborish">
+          <span>Yuborish</span>
+        </button>
       </div>
       <input id="image-input" type="file" accept="image/*" class="hidden" />
       <input id="audio-input" type="file" accept="audio/*" class="hidden" />
-    </form>
+    </div>
+
+    <div id="chatError" class="chat-error" role="alert" hidden></div>
   </div>
 </div>
 
-<script src="{% static 'js/chat.js' %}"></script>
+<script src="{% static 'js/chat-controller.js' %}" defer></script>
 {% endblock %}

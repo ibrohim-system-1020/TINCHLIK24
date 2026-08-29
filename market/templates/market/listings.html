@@ -1,0 +1,53 @@
+{% extends 'base.html' %}
+{% load static %}
+{% load humanize %}
+<link rel="stylesheet" href="{% static 'css/market.css' %}">
+{% block title %}Mahalla bozori — E'lonlar{% endblock %}
+{% block content %}
+<section class="market-listings section-wrap">
+  <div class="section-heading">
+    <div>
+      <span class="eyebrow">E'lonlar</span>
+      <h2>Mahalla bozori</h2>
+      <p>Mahallangizdagi yangi va ishlatilgan mahsulotlarni toping</p>
+    </div>
+    <a href="{% url 'market:create_listing' %}" class="btn btn-primary">+ E'lon joylash</a>
+  </div>
+  <form method="get" class="market-search">
+    <input type="search" name="q" placeholder="Nima qidiryapsiz?" value="{{ query }}" aria-label="Search listings" />
+    <button class="btn">Qidirish</button>
+  </form>
+
+  <div class="listings-grid">
+    {% for item in listings %}
+    <article class="listing-card">
+      <a href="{% url 'market:listing_detail' item.pk %}">
+        {% if item.images.all|length > 0 %}
+          <img src="{{ item.images.all.0.image.url }}" alt="{{ item.title }}" />
+        {% endif %}
+        <div class="listing-body">
+          <h3>{{ item.title }}</h3>
+          <div class="meta">
+            <span class="price">{{ item.price|intcomma }} so'm{% if item.negotiable %} (Kelishiladi){% endif %}</span>
+            <span class="cond">{{ item.get_condition_display }}</span>
+          </div>
+        </div>
+      </a>
+    </article>
+    {% empty %}
+      <div class="empty-state">Hech qanday e'lon mavjud emas.</div>
+    {% endfor %}
+  </div>
+
+  <div class="pagination">
+    {% if listings.has_previous %}
+      <a href="?page={{ listings.previous_page_number }}" class="btn">Oldingi</a>
+    {% endif %}
+    <span class="page-info">Sahifa {{ listings.number }} / {{ listings.paginator.num_pages }}</span>
+    {% if listings.has_next %}
+      <a href="?page={{ listings.next_page_number }}" class="btn">Keyingi</a>
+    {% endif %}
+  </div>
+</section>
+<script src="{% static 'js/market.js' %}"></script>
+{% endblock %}

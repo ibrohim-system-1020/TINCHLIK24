@@ -1,0 +1,13 @@
+{% extends 'base.html' %}
+{% block title %}E'lonni o'chirish{% endblock %}
+{% block content %}
+<section class="section-wrap">
+  <h2>Bu e'lonni o'chirmoqchimisiz?</h2>
+  <p>{{ listing.title }}</p>
+  <form method="post">
+    {% csrf_token %}
+    <button type="submit" class="btn btn-danger">Ha, o'chirish</button>
+    <a href="{% url 'market:listing_detail' listing.pk %}" class="btn">Bekor qilish</a>
+  </form>
+</section>
+{% endblock %}

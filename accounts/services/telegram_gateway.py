@@ -30,7 +30,7 @@ def _gateway_request(path: str, payload: dict, timeout: int = 10) -> dict:
     if not token:
         raise TelegramGatewayError("Telegram gateway token is not configured.")
 
-    url = urljoin("https://gatewayapi.telegram.org/", f"v1/{path}")
+    url = urljoin("https://gatewayapi.telegram.org/", path)
     data = json.dumps(payload).encode("utf-8")
 
     headers = {

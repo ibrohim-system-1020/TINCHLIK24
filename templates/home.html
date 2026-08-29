@@ -1,247 +1,1252 @@
 {% extends "base.html" %}
 {% load static %}
 
+{% block title %}TINCHLIK | Bosh sahifa{% endblock %}
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/home.css' %}">
+  <link rel="stylesheet" href="{% static 'css/chat.css' %}">
+{% endblock %}
+{% block extra_js %}
+  <script src="{% static 'js/home.js' %}"></script>
+  <script src="{% static 'js/scroll-animations.js' %}"></script>
+  <script>
+    if (typeof anime !== 'undefined') {
+      const { animate, stagger } = anime;
+      const logo = document.querySelector(".logo");
+
+      if (logo) {
+        logo.innerHTML = logo.textContent
+          .split("")
+          .map(letter => `<span>${letter}</span>`)
+          .join("");
+
+        const chars = document.querySelectorAll(".logo span");
+
+        animate(chars, {
+          targets: chars,
+          translateY: [-20, 0],
+          opacity: [0, 1],
+          rotate: [-12, 0],
+          duration: 600,
+          delay: anime.stagger(50),
+          easing: 'easeOutExpo'
+        });
+      }
+
+      const links = document.querySelectorAll(".list li a");
+
+      if (links.length) {
+        animate(links, {
+          targets: links,
+          translateY: [-18, 0],
+          opacity: [0,1],
+          scale: [0.96,1],
+          duration: 550,
+          delay: anime.stagger(80),
+          easing: 'easeOutExpo'
+        });
+
+        links.forEach(link => {
+          link.addEventListener("mouseenter", () => {
+            animate(link, { translateY: -3, scale: 1.02, duration: 180, easing: 'easeOutQuad' });
+          });
+          link.addEventListener("mouseleave", () => {
+            animate(link, { translateY: 0, scale: 1, duration: 180, easing: 'easeOutQuad' });
+          });
+        });
+      }
+    }
+  </script>
+{% endblock %}
 {% block content %}
 {% if user.is_authenticated %}
-  <link rel="stylesheet" href="{% static 'css/home.css' %}" />
-  <link rel="stylesheet" href="{% static 'css/chat.css' %}" />
 
-  <nav class="bar animate-down">
-    <a href="https://www.tinchlik.online" class="logo animate-left">TINCHLIK</a>
-    <ul class="list animate-right">
-      <li><a href="https://www.tinchlik.online">Asosiy</a></li>
-      <li><a href="{% url 'home' %}#chat">Chat</a></li>
-      <li><a href="#">Kontaktlar</a></li>
-      <li><a href="#">Biz bilan aloqa</a></li>
-    </ul>
-    <a href="{% url 'accounts:profile' %}" class="register profile-btn animate-right">
-      👤 {{ user.first_name|default:"Profil" }}
-    </a>
-  </nav>
-
-  <div class="auth-dashboard-shell">
-    <div class="auth-dashboard-grid">
-      <aside class="dashboard-panel dashboard-news">
-        <div class="panel-header">
-          <h2>Yangiliklar</h2>
+  <div class="dashboard-page">
+    <main class="dashboard-main">
+      <header class="dashboard-header slim">
+        <div>
+          <h1 class="greeting">Assalomu alaykum, {{ user.first_name|default:'Foydalanuvchi' }}</h1>
+          <p class="small-sub">Bugun sizga nima kerak?</p>
         </div>
 
-        {% if news_items %}
-          <div class="news-list">
-            {% for item in news_items %}
-              <article class="news-item">
-                <h3>{{ item.title }}</h3>
-                <p>{{ item.summary }}</p>
-                <time>{{ item.created_at|date:"d.m.Y H:i" }}</time>
-              </article>
-            {% endfor %}
-          </div>
-        {% else %}
-          <div class="empty-panel-state">
-            <p>Hozircha yangiliklar yo'q.</p>
-          </div>
-        {% endif %}
-      </aside>
-
-      <main class="dashboard-main" id="chat">
-        {% include "chat/_chat_panel.html" %}
-      </main>
-
-      <aside class="dashboard-panel dashboard-online">
-        <div class="panel-header">
-          <h2>Online</h2>
+        <div class="header-avatar" aria-label="Foydalanuvchi profili">
+          {% if user.profile_photo_url %}
+            <img src="{{ user.profile_photo_url }}" alt="{{ user.get_full_name|default:user.email }}" />
+          {% else %}
+            <span>{{ user.first_name|default:'F'|slice:':1' }}{{ user.last_name|default:'Y'|slice:':1' }}</span>
+          {% endif %}
         </div>
+      </header>
 
-        {% if online_users %}
-          <div class="online-list">
-            {% for presence_user in online_users %}
-              <div class="online-user">
-                <div class="online-avatar-box">
-                  {% if presence_user.avatar %}
-                    <img src="{{ presence_user.avatar }}" alt="{{ presence_user.name }}" />
-                  {% else %}
-                    {{ presence_user.name|slice:':1'|upper }}
-                  {% endif %}
-                </div>
-                <div class="online-user-meta">
-                  <span>{{ presence_user.name }}</span>
-                </div>
-                <span class="online-indicator" aria-label="online"></span>
-              </div>
-            {% endfor %}
+      <!-- PROMINENT CHAT CARD -->
+      <section class="hero-chat" aria-label="Umumiy chat">
+        <article class="chat-card">
+          <div class="chat-card-left">
+            <div class="chat-title">💬 Umumiy chat</div>
+            <div class="chat-sub">Mahalladoshlaringiz bilan suhbatlashing</div>
+            {% if online_users %}
+              <div class="chat-online">Hozir online: <strong>{{ online_users }}</strong></div>
+            {% endif %}
           </div>
-        {% else %}
-          <div class="empty-panel-state">
-            <p>Hech kim online emas.</p>
+          <div class="chat-card-right">
+            <a href="{% url 'chat:chat' %}" class="primary-button large">Chatga kirish</a>
           </div>
-        {% endif %}
-      </aside>
-    </div>
-  </div>
-{% else %}
-  <!doctype html>
-  <html lang="en">
-    <head>
-      <meta charset="UTF-8" />
-      <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-      <title>TINCHLIK | MFY</title>
-      <link rel="icon" type="image/jpeg" href="{% static 'images/favicon.jpg' %}">
-      <link rel="stylesheet" href="{% static 'css/home.css' %}" />
-    </head>
-    <body>
-      <nav class="bar animate-down">
-        <a href="https://www.tinchlik.online" class="logo animate-left">TINCHLIK</a>
-        <ul class="list animate-right">
-          <li><a href="https://www.tinchlik.online">Asosiy</a></li>
-          <li><a href="{% url 'home' %}#chat">Chat</a></li>
-          <li><a href="#">Kontaktlar</a></li>
-          <li><a href="#">Biz bilan aloqa</a></li>
-        </ul>
-        <a href="{% url 'accounts:register' %}?tab=login" class="register animate-right">
-          KIRISH
+        </article>
+      </section>
+
+      <!-- QUICK ACTIONS -->
+      <section class="quick-actions new-quick" aria-label="Tezkor amallar">
+        <a class="quick-action" href="{% url 'market:listings' %}">
+          <div class="qa-icon">🛒</div>
+          <div class="qa-title">Sotuvlar</div>
+          <div class="qa-desc">Mahalladagi e'lonlarni ko‘ring</div>
         </a>
+
+        <a class="quick-action primary" href="{% url 'market:create_listing' %}">
+          <div class="qa-icon">➕</div>
+          <div class="qa-title">E'lon joylash</div>
+          <div class="qa-desc">Yangi e'lon qo‘shish</div>
+        </a>
+
+        <a class="quick-action" href="{% url 'home' %}#services">
+          <div class="qa-icon">🛠</div>
+          <div class="qa-title">Xizmatlar</div>
+          <div class="qa-desc">Kerakli xizmatlarni ko‘ring</div>
+        </a>
+
+        <a class="quick-action" href="{% url 'accounts:profile' %}">
+          <div class="qa-icon">👤</div>
+          <div class="qa-title">Profil</div>
+          <div class="qa-desc">Profilim va sozlamalar</div>
+        </a>
+      </section>
+
+      <section class="content-grid" aria-label="Dashboard bo'limlari">
+        <article class="panel request-panel" id="requests">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Holat</p>
+              <h2>Murojaatlar holati</h2>
+            </div>
+          </div>
+
+          <div class="status-summary">
+            <div class="summary-box">
+              <span class="summary-label">Jami</span>
+              <strong>{{ dashboard_stats.total }}</strong>
+            </div>
+            <div class="summary-box warn">
+              <span class="summary-label">Ko‘rib chiqilmoqda</span>
+              <strong>{{ dashboard_stats.in_progress }}</strong>
+            </div>
+            <div class="summary-box success">
+              <span class="summary-label">Hal qilindi</span>
+              <strong>{{ dashboard_stats.resolved }}</strong>
+            </div>
+            <div class="summary-box danger">
+              <span class="summary-label">Rad etildi</span>
+              <strong>{{ dashboard_stats.rejected }}</strong>
+            </div>
+          </div>
+
+          <div class="status-legend" aria-label="Status bo'yicha izoh">
+            <span><i class="dot dot-new"></i>Yangi</span>
+            <span><i class="dot dot-pending"></i>Ko‘rib chiqilmoqda</span>
+            <span><i class="dot dot-done"></i>Hal qilindi</span>
+            <span><i class="dot dot-rejected"></i>Rad etildi</span>
+          </div>
+        </article>
+
+        <aside class="panel profile-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Profil</p>
+              <h2>Foydalanuvchi ma'lumotlari</h2>
+            </div>
+          </div>
+
+          <div class="profile-details">
+            <div class="detail-row">
+              <span>Ism familiya</span>
+              <strong>{{ user.get_full_name|default:'Foydalanuvchi' }}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Telefon</span>
+              <strong>{{ user.telefon|default:'Kiritilmagan' }}</strong>
+            </div>
+            <div class="detail-row">
+              <span>Mahalla</span>
+              <strong>Tinchlik MFY</strong>
+            </div>
+          </div>
+
+          <a href="{% url 'accounts:profile' %}" class="secondary-button">Profilni tahrirlash</a>
+        </aside>
+      </section>
+
+      <section class="content-grid lower-grid">
+        <article class="panel recent-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Yangi</p>
+              <h2>So‘nggi murojaatlar</h2>
+            </div>
+          </div>
+
+          {% if recent_requests %}
+            <div class="request-list">
+              {% for item in recent_requests %}
+                <div class="request-item">
+                  <div>
+                    <h3>{{ item.title }}</h3>
+                    <p>{{ item.date|date:"d.m.Y" }}</p>
+                  </div>
+                  <span class="request-status {{ item.status_class }}">{{ item.status }}</span>
+                  <a href="{{ item.detail_url }}" class="mini-link">Batafsil</a>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <p>Siz hali murojaat yubormagansiz.</p>
+              <a href="{% url 'accounts:profile' %}" class="primary-button">Birinchi murojaatni yuborish</a>
+            </div>
+          {% endif %}
+        </article>
+
+        <article class="panel news-panel" id="news">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Yangiliklar</p>
+              <h2>Muhim yangiliklar</h2>
+            </div>
+          </div>
+
+          {% if news_items %}
+            <div class="news-list">
+              {% for item in news_items %}
+                <article class="news-item">
+                  <div class="news-badge">E'lon</div>
+                  <h3>{{ item.title }}</h3>
+                  <p>{{ item.summary }}</p>
+                  <time>{{ item.created_at|date:"d.m.Y" }}</time>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state small">
+              <p>Hozircha e'lonlar yo‘q.</p>
+            </div>
+          {% endif %}
+        </article>
+      </section>
+
+      <section class="content-grid market-grid">
+        <article class="panel market-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Bozor</p>
+              <h2>So‘nggi e’lonlar</h2>
+            </div>
+            <a href="{% url 'market:listings' %}" class="mini-link">Hammasi</a>
+          </div>
+
+          {% if latest_listings %}
+            <div class="market-list">
+              {% for listing in latest_listings %}
+                <article class="market-item">
+                  <div class="market-thumb">
+                    {% if listing.images.first %}
+                      <img src="{{ listing.images.first.image.url }}" alt="{{ listing.title }}" />
+                    {% else %}
+                      <span>📦</span>
+                    {% endif %}
+                  </div>
+                  <div class="market-body">
+                    <h3>{{ listing.title }}</h3>
+                    <p>{{ listing.price }} so‘m</p>
+                    <small>{{ listing.created_at|date:"d.m.Y" }}</small>
+                  </div>
+                </article>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state small">
+              <p>Hozircha e’lonlar mavjud emas.</p>
+            </div>
+          {% endif %}
+        </article>
+
+        <article class="panel my-listings-panel">
+          <div class="panel-header">
+            <div>
+              <p class="panel-kicker">Sotuv</p>
+              <h2>Mening e’lonlarim</h2>
+            </div>
+            <a href="{% url 'market:my_listings' %}" class="mini-link">Barchasi</a>
+          </div>
+
+          {% if user_listings %}
+            <div class="mini-listings">
+              {% for listing in user_listings %}
+                <div class="mini-listing">
+                  <div>
+                    <strong>{{ listing.title }}</strong>
+                    <small>{{ listing.created_at|date:"d.m.Y" }}</small>
+                  </div>
+                  <span class="listing-tag">{{ listing.status }}</span>
+                </div>
+              {% endfor %}
+            </div>
+          {% else %}
+            <div class="empty-state small">
+              <p>Hali e’lonlaringiz yo‘q.</p>
+            </div>
+          {% endif %}
+        </article>
+      </section>
+
+      {# Chat is available via the prominent chat card above. Keep low-level panel removed to avoid duplication. #}
+    </main>
+  </div>
+
+  <style>
+    .dashboard-page {
+      width: min(96%, 1500px);
+      margin: 0 auto;
+      padding: clamp(18px, 2vw, 32px) clamp(16px, 2vw, 26px) 42px;
+      color: var(--text);
+      min-height: calc(100vh - 80px);
+    }
+
+    .dashboard-main {
+      display: flex;
+      flex-direction: column;
+      gap: clamp(18px, 2vw, 24px);
+      min-width: 0;
+    }
+
+    .dashboard-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 20px;
+      padding: clamp(20px, 2vw, 28px);
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .dashboard-header h1 {
+      margin: 0;
+      font-size: clamp(2rem, 4vw, 3rem);
+      line-height: 1.1;
+    }
+
+    .header-subtitle {
+      margin-top: 8px;
+      color: var(--muted);
+      font-size: 1.02rem;
+      max-width: 760px;
+      line-height: 1.6;
+    }
+
+    .eyebrow,
+    .panel-kicker {
+      font-size: 0.72rem;
+      letter-spacing: 0.12em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 6px;
+    }
+
+    .header-avatar {
+      width: 78px;
+      height: 78px;
+      border-radius: 24px;
+      background: linear-gradient(135deg, var(--primary), var(--accent));
+      display: grid;
+      place-items: center;
+      color: white;
+      font-weight: 800;
+      font-size: 1.4rem;
+      overflow: hidden;
+      box-shadow: var(--shadow-soft);
+      flex-shrink: 0;
+    }
+
+    .header-avatar img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .stat-card {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 24px;
+      padding: 22px 20px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .stat-icon {
+      width: 52px;
+      height: 52px;
+      border-radius: 16px;
+      display: grid;
+      place-items: center;
+      font-size: 1.4rem;
+      flex-shrink: 0;
+    }
+
+    .stat-icon.blue { background: rgba(66, 133, 244, 0.12); }
+    .stat-icon.amber { background: rgba(245, 158, 11, 0.12); }
+    .stat-icon.green { background: rgba(34, 197, 94, 0.12); }
+
+    .stat-card span {
+      display: block;
+      font-size: 0.9rem;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    .stat-card strong {
+      font-size: clamp(1.5rem, 2vw, 2rem);
+      line-height: 1.2;
+    }
+
+    .quick-actions {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 16px;
+    }
+
+    .action-card {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 24px 20px;
+      box-shadow: var(--shadow-soft);
+      transition: transform 0.22s ease, box-shadow 0.22s ease, border-color 0.22s ease;
+    }
+
+    .action-card:hover,
+    .action-card:focus-within {
+      transform: translateY(-4px);
+      box-shadow: var(--shadow);
+      border-color: rgba(110, 168, 255, 0.25);
+    }
+
+    .action-icon {
+      width: 52px;
+      height: 52px;
+      display: grid;
+      place-items: center;
+      border-radius: 16px;
+      background: linear-gradient(135deg, rgba(18,61,141,0.1), rgba(125,211,252,0.12));
+      font-size: 1.5rem;
+    }
+
+    .action-card h2 {
+      margin: 0;
+      font-size: 1.2rem;
+      line-height: 1.3;
+    }
+
+    .action-card p {
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.96rem;
+      min-height: 48px;
+    }
+
+    .action-link,
+    .primary-button,
+    .secondary-button,
+    .mini-link {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 44px;
+      border-radius: 12px;
+      font-weight: 700;
+      text-decoration: none;
+      transition: transform 0.2s ease, opacity 0.2s ease;
+    }
+
+    .action-link,
+    .primary-button {
+      background: linear-gradient(135deg, var(--primary), var(--primary-strong));
+      color: white;
+      padding: 0 16px;
+    }
+
+    .secondary-button {
+      background: var(--surface-strong);
+      color: var(--text);
+      border: 1px solid var(--border);
+      padding: 0 16px;
+      margin-top: 18px;
+    }
+
+    .mini-link {
+      color: var(--primary-strong);
+      font-weight: 700;
+    }
+
+    .content-grid {
+      display: grid;
+      grid-template-columns: minmax(0, 1.65fr) minmax(280px, 0.95fr);
+      gap: 16px;
+    }
+
+    .panel {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 26px;
+      padding: 20px 18px 18px;
+      box-shadow: var(--shadow-soft);
+    }
+
+    .panel-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 18px;
+      gap: 12px;
+    }
+
+    .panel-header h2 {
+      margin: 0;
+      font-size: clamp(1.2rem, 2vw, 1.6rem);
+    }
+
+    .status-summary {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 12px;
+      margin-bottom: 18px;
+    }
+
+    .summary-box {
+      background: var(--surface-strong);
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      padding: 14px 12px;
+    }
+
+    .summary-box strong {
+      display: block;
+      font-size: 1.8rem;
+      margin-top: 8px;
+    }
+
+    .summary-label {
+      display: block;
+      color: var(--muted);
+      font-size: 0.8rem;
+      line-height: 1.5;
+    }
+
+    .summary-box.warn { border-color: rgba(245, 158, 11, 0.22); }
+    .summary-box.success { border-color: rgba(34, 197, 94, 0.22); }
+    .summary-box.danger { border-color: rgba(220, 38, 38, 0.22); }
+
+    .status-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 12px 18px;
+      color: var(--muted);
+      font-size: 0.88rem;
+    }
+
+    .status-legend span {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .dot {
+      width: 10px;
+      height: 10px;
+      border-radius: 50%;
+      display: inline-block;
+    }
+
+    .dot-new { background: #4f9cff; }
+    .dot-pending { background: #facc15; }
+    .dot-done { background: #22c55e; }
+    .dot-rejected { background: #ef4444; }
+
+    .profile-details {
+      display: grid;
+      gap: 12px;
+    }
+
+    .detail-row {
+      display: flex;
+      justify-content: space-between;
+      gap: 12px;
+      padding: 12px 0;
+      border-bottom: 1px solid var(--border);
+      color: var(--muted);
+      font-size: 0.95rem;
+    }
+
+    .detail-row strong {
+      color: var(--text);
+      text-align: right;
+      font-size: 0.94rem;
+    }
+
+    .request-list,
+    .news-list,
+    .market-list,
+    .mini-listings {
+      display: grid;
+      gap: 14px;
+    }
+
+    .request-item,
+    .market-item,
+    .news-item,
+    .mini-listing {
+      border: 1px solid var(--border);
+      border-radius: 18px;
+      background: var(--surface-strong);
+    }
+
+    .request-item {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto auto;
+      gap: 12px;
+      align-items: center;
+      padding: 16px 14px;
+    }
+
+    .request-item h3 {
+      margin: 0 0 5px;
+      font-size: 1rem;
+    }
+
+    .request-item p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.82rem;
+    }
+
+    .request-status {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 38px;
+      padding: 0 12px;
+      border-radius: 999px;
+      font-size: 0.78rem;
+      font-weight: 700;
+      border: 1px solid var(--border);
+      background: rgba(79, 156, 255, 0.08);
+      color: var(--text);
+    }
+
+    .request-status.new { background: rgba(79, 156, 255, 0.12); color: #1d4ed8; }
+    .request-status.pending { background: rgba(250, 204, 21, 0.18); color: #92400e; }
+    .request-status.done { background: rgba(34, 197, 94, 0.12); color: #166534; }
+    .request-status.rejected { background: rgba(239, 68, 68, 0.12); color: #991b1b; }
+
+    .news-item {
+      padding: 16px 14px;
+    }
+
+    .news-badge {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: rgba(18, 61, 141, 0.08);
+      color: var(--primary-strong);
+      border-radius: 999px;
+      padding: 7px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      margin-bottom: 10px;
+    }
+
+    .news-item h3,
+    .market-item h3 {
+      margin: 0 0 8px;
+      font-size: 1.1rem;
+    }
+
+    .news-item p,
+    .market-body p {
+      margin: 0;
+      color: var(--muted);
+      line-height: 1.6;
+      font-size: 0.94rem;
+    }
+
+    .news-item time,
+    .market-body small,
+    .mini-listing small {
+      display: block;
+      margin-top: 10px;
+      color: var(--muted);
+      font-size: 0.78rem;
+    }
+
+    .market-list {
+      grid-template-columns: 1fr;
+    }
+
+    .market-item {
+      display: flex;
+      gap: 12px;
+      padding: 10px;
+      align-items: center;
+    }
+
+    .market-thumb {
+      width: 88px;
+      height: 88px;
+      border-radius: 14px;
+      flex-shrink: 0;
+      display: grid;
+      place-items: center;
+      background: rgba(59, 130, 246, 0.06);
+      overflow: hidden;
+      color: var(--primary-strong);
+      font-size: 1.8rem;
+    }
+
+    .market-thumb img {
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+    }
+
+    .market-body {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .mini-listing {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 12px;
+      padding: 12px 14px;
+    }
+
+    .mini-listing strong {
+      display: block;
+      margin-bottom: 4px;
+    }
+
+    .listing-tag {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      background: rgba(59, 130, 246, 0.08);
+      color: var(--text);
+      padding: 7px 10px;
+      font-size: 0.72rem;
+      font-weight: 700;
+      white-space: nowrap;
+    }
+
+    .empty-state {
+      display: flex;
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 16px;
+      padding: 18px 6px 8px;
+      color: var(--muted);
+    }
+
+    .empty-state p {
+      margin: 0;
+      font-size: 1rem;
+      line-height: 1.6;
+    }
+
+    .chat-panel {
+      padding: 0;
+      overflow: hidden;
+    }
+
+    .chat-panel .chat-page {
+      border-radius: 30px;
+    }
+
+    @media (max-width: 1180px) {
+      .quick-actions {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .content-grid {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 700px) {
+      .dashboard-header {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .stats-grid,
+      .quick-actions,
+      .status-summary {
+        grid-template-columns: 1fr;
+      }
+
+      .request-item {
+        grid-template-columns: 1fr;
+        align-items: flex-start;
+      }
+
+      .market-item,
+      .mini-listing {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+    }
+  </style>
+    <style>
+      /* New layout styles for redesigned dashboard */
+      .dashboard-header.slim {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 14px 18px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 18px;
+      }
+
+      .greeting {
+        font-size: 1.4rem;
+        margin: 0;
+      }
+
+      .small-sub {
+        color: var(--muted);
+        font-size: 1rem;
+        margin-top: 6px;
+      }
+
+      .hero-chat { margin-top: 12px; }
+
+      .chat-card {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+        padding: 18px;
+        border-radius: 16px;
+        background: linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0));
+        border: 1px solid var(--border);
+      }
+
+      .chat-title { font-size: 1.2rem; font-weight: 800; }
+      .chat-sub { color: var(--muted); margin-top: 6px; }
+      .chat-online { margin-top: 8px; color: var(--muted); font-size: 0.95rem; }
+
+      .primary-button.large { padding: 14px 22px; font-size: 1rem; min-width: 160px; }
+
+      .quick-actions.new-quick {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+        margin-top: 14px;
+      }
+
+      .quick-action {
+        display: flex;
+        flex-direction: column;
+        gap: 10px;
+        align-items: flex-start;
+        padding: 16px;
+        border-radius: 14px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        text-decoration: none;
+        color: inherit;
+      }
+
+      .qa-icon { font-size: 28px; }
+      .qa-title { font-weight: 800; font-size: 1.05rem; }
+      .qa-desc { color: var(--muted); font-size: 0.95rem; }
+
+      .quick-action.primary { background: linear-gradient(135deg, var(--primary), var(--primary-strong)); color: white; }
+
+      @media (max-width: 1180px) {
+        .quick-actions.new-quick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      }
+
+      @media (max-width: 700px) {
+        .quick-actions.new-quick { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+        .chat-card { flex-direction: column; align-items: stretch; }
+        .chat-card-right { display: flex; justify-content: flex-end; }
+      }
+
+      /* Mobile bottom navigation */
+      .mobile-bottom-nav {
+        display: none;
+        position: fixed;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: var(--surface);
+        border-top: 1px solid var(--border);
+        padding: 8px 10px;
+        z-index: 9999;
+      }
+
+      .mobile-bottom-nav .mb-item {
+        display: inline-flex;
+        width: 20%;
+        text-align: center;
+        font-size: 12px;
+        color: var(--muted);
+        text-decoration: none;
+      }
+
+      .mobile-bottom-nav .mb-item .icon { font-size: 20px; display: block; }
+
+      @media (max-width: 700px) {
+        .mobile-bottom-nav { display: flex; justify-content: space-between; }
+      }
+    </style>
+
+    <!-- Mobile bottom navigation for quick access -->
+    <nav class="mobile-bottom-nav" aria-hidden="true">
+      <a class="mb-item" href="{% url 'home' %}"><span class="icon">🏠</span><span>Bosh</span></a>
+      <a class="mb-item" href="{% url 'chat:chat' %}"><span class="icon">💬</span><span>Chat</span></a>
+      <a class="mb-item" href="{% url 'market:create_listing' %}"><span class="icon">➕</span><span>Sotish</span></a>
+      <a class="mb-item" href="{% url 'home' %}#services"><span class="icon">🛠</span><span>Xizmat</span></a>
+      <a class="mb-item" href="{% url 'accounts:profile' %}"><span class="icon">👤</span><span>Profil</span></a>
+    </nav>
+{% else %}
+      <nav class="bar animate-down" aria-label="Asosiy navigatsiya">
+        <a href="https://tinchlik24.uz" class="logo animate-left">TINCHLIK</a>
+        <button class="nav-toggle" type="button" aria-label="Menyu ochish" aria-expanded="false" data-nav-toggle>
+          <span></span><span></span><span></span>
+        </button>
+        <div class="nav-panel">
+          <ul class="list animate-right">
+            <li><a href="{% url 'home' %}#top">Asosiy</a></li>
+            <li><a href="{% url 'home' %}#features">Xizmatlar</a></li>
+            <li><a href="{% url 'home' %}#community">Mahalla</a></li>
+            <li><a href="{% url 'home' %}#updates">Yangiliklar</a></li>
+            <li><a href="{% url 'home' %}#contact">Aloqa</a></li>
+          </ul>
+          <a href="{% url 'accounts:register' %}?tab=register" class="register animate-right">
+            Ro'yxatdan o'tish
+          </a>
+        </div>
       </nav>
 
-      <div class="consider animate-up">
-        <a href="" class="const-box-small animate-scale">
-          <div class="elem-box">
-            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
-            <div class="cont-text">
-              <h2 class="tav">Mening Uyim</h2>
-              <p class="hav">Mening uyim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+      <main class="landing-page" id="top">
+        <section class="hero section-wrap">
+          <div class="hero-grid">
+            <div class="hero-copy">
+              <span class="eyebrow">Mahalla va shaxsiy xizmat platformasi</span>
+              <h1>
+                Mahallangizni <span>zamonaviy</span><br />
+                va ishonchli platforma bilan birlashtiramiz.
+              </h1>
+              <p>
+                TINCHLIK yordamida uy, mahalla, ta'lim va kundalik xizmatlar bir joyga yig'iladi.
+                Foydalanuvchilar uchun qulay, boshqaruvchilar uchun samarali va jamoa uchun ishonchli tajriba yaratamiz.
+              </p>
+
+              <div class="hero-actions">
+                <a href="{% url 'accounts:register' %}?tab=register" class="btn btn-primary">Boshlash</a>
+                <a href="#features" class="btn btn-secondary">Batafsil</a>
+              </div>
+
+              <ul class="trust-list" aria-label="Platform foydasi">
+                <li>24/7 online yordam</li>
+                <li>Mahalla muloqati</li>
+                <li>Tez va xavfsiz murojaat</li>
+              </ul>
+            </div>
+
+            <div class="hero-visual" aria-label="TINCHLIK platformasi demo">
+              <div class="visual-window">
+                <div class="visual-topbar">
+                  <span class="dot dot-red"></span>
+                  <span class="dot dot-yellow"></span>
+                  <span class="dot dot-green"></span>
+                </div>
+
+                <div class="dashboard-preview">
+                  <div class="preview-panel preview-panel-main">
+                    <div class="preview-header">
+                      <span class="label">Jami faoliyat</span>
+                      <span class="trend up">+18.4%</span>
+                    </div>
+                    <div class="preview-amount">24.8K</div>
+                    <div class="mini-bars">
+                      <span></span><span></span><span></span><span></span><span></span><span></span>
+                    </div>
+                  </div>
+
+                  <div class="preview-grid">
+                    <div class="mini-card">
+                      <span class="mini-label">Uylar</span>
+                      <strong>8.6K</strong>
+                    </div>
+                    <div class="mini-card accent">
+                      <span class="mini-label">Mahalla</span>
+                      <strong>3.2K</strong>
+                    </div>
+                    <div class="mini-card">
+                      <span class="mini-label">Maktab</span>
+                      <strong>1.9K</strong>
+                    </div>
+                    <div class="mini-card accent-two">
+                      <span class="mini-label">Xizmatlar</span>
+                      <strong>96%</strong>
+                    </div>
+                  </div>
+                </div>
+              </div>
             </div>
           </div>
-        </a>
+        </section>
 
-        <a href="" class="const-box-big">
-          <div class="elem-box">
-            <img src="{% static 'images/mahalla.svg' %}" alt="" class="elem" id="tar2">
-            <div class="cont-text">
-              <h2 class="tav">Mening Mahallam</h2>
-              <p class="hav">Mening mahallam funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+        <section class="stats-strip section-wrap" aria-label="Platform statistikasi">
+          <article class="stat-item">
+            <strong>24/7</strong>
+            <span>Onlayn xizmat</span>
+          </article>
+          <article class="stat-item">
+            <strong>6000+</strong>
+            <span>Foydalanuvchilar</span>
+          </article>
+          <article class="stat-item">
+            <strong>98%</strong>
+            <span>Qoniqish ko'rsatkichi</span>
+          </article>
+          <article class="stat-item">
+            <strong>12k</strong>
+            <span>Kunlik harakat</span>
+          </article>
+        </section>
+
+        <section class="section-wrap" id="features">
+          <div class="section-heading">
+            <div>
+              <span class="eyebrow">Platform imkoniyatlari</span>
+              <h2>Mahallangiz uchun tayyorlangan qulay ishlash tajribasi</h2>
             </div>
           </div>
-        </a>
 
-        <a href="" class="const-box-big">
-          <div class="elem-box">
-            <img src="{% static 'images/maktab.svg' %}" alt="" class="elem" id="mak">
-            <div class="cont-text">
-              <h2 class="tav">Mening Maktabim</h2>
-              <p class="hav">Mening maktabim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+          <div class="consider animate-up">
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-small animate-scale">
+              <div class="elem-box">
+                <img src="{% static 'images/home.svg' %}" alt="Mening uyim" class="elem" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Mening Uyim</h2>
+                  <p class="hav">Uyga oid ma'lumotlar, xizmatlar va tezkor axborotni bir joyda boshqaring.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-big">
+              <div class="elem-box">
+                <img src="{% static 'images/mahalla.svg' %}" alt="Mening mahallam" class="elem" id="tar2" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Mening Mahallam</h2>
+                  <p class="hav">Jamoaviy hamkorlik, mahalla yangiliklari va tezkor operativ aloqalarni boshqaring.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-big">
+              <div class="elem-box">
+                <img src="{% static 'images/maktab.svg' %}" alt="Mening maktabim" class="elem" id="mak" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Mening Maktabim</h2>
+                  <p class="hav">Ta'lim va talaba maʻlumotlarini professional holatda ko'rish va boshqarish imkoniyati.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-small">
+              <div class="elem-box">
+                <img src="{% static 'images/home.svg' %}" alt="Mening xizmatlarim" class="elem" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Mening Xizmatlarim</h2>
+                  <p class="hav">Eng kerakli xizmatlar va tezkor harakatlarni faqat bitta paneldan boshqaring.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-small">
+              <div class="elem-box">
+                <img src="{% static 'images/home.svg' %}" alt="Yengil boshqaruv" class="elem" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Yengil Boshqaruv</h2>
+                  <p class="hav">Kundalik vazifalar, ma'lumotlar va aloqalar aniq va tartibli ko'rinadi.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-big">
+              <div class="elem-box">
+                <img src="{% static 'images/mahalla.svg' %}" alt="Hamjamiyat" class="elem" id="tar2" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Hamjamiyat</h2>
+                  <p class="hav">Foydalanuvchilar o'rtasidagi hamkorlik va fikr almashish uchun qulay muhit.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-big">
+              <div class="elem-box">
+                <img src="{% static 'images/maktab.svg' %}" alt="Maqsadlar" class="elem" id="mak" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Maqsadga Yo'naltirilgan</h2>
+                  <p class="hav">Har bir bo'lim maqsadli, tezkor va foydalanuvchi uchun qulay ishlab chiqilgan.</p>
+                </div>
+              </div>
+            </a>
+
+            <a href="{% url 'accounts:register' %}?tab=register" class="const-box-small">
+              <div class="elem-box">
+                <img src="{% static 'images/home.svg' %}" alt="Kundalik faoliyat" class="elem" loading="lazy" />
+                <div class="cont-text">
+                  <h2 class="tav">Kundalik Faoliyat</h2>
+                  <p class="hav">Har qanday vazifa va jarayonni monitor qilish va boshqarish qulayliklari mavjud.</p>
+                </div>
+              </div>
+            </a>
+          </div>
+        </section>
+
+        <section class="community-section" id="community">
+          <div class="section-wrap community-layout">
+            <div class="community-copy">
+              <span class="eyebrow">TINCHLIK jamiyati</span>
+              <h2>Foydalanuvchilar sifatli va xavfsiz muhitda birga ishlaydi.</h2>
+              <p>
+                Bizning platforma faqat texnologiya emas, balki mahalla va jamoalar bilan ishlashga qaratilgan ishonchli infratuzilma.
+                Har bir jarayon oson, aniq va foydalanishga qulay holatda taqdim etiladi.
+              </p>
+
+              <ul class="check-list">
+                <li>Real-time bitta kundalik hisob va monitoring</li>
+                <li>Mahalliy yoki jamoaviy muammolarga tezkor javob</li>
+                <li>Jamoa va foydalanuvchi o'rtasida yaqin aloqani ta'minlash</li>
+              </ul>
+            </div>
+
+            <div class="community-panels">
+              <article class="mini-panel">
+                <span class="mini-tag">Mahalla monitoringi</span>
+                <h3>Haqiqiy va tezkor imkoniyatlar</h3>
+                <p>Har bir yangilik, jarayon va harakat bir joyda ko'riladi.</p>
+              </article>
+              <article class="mini-panel soft">
+                <span class="mini-tag">Foydalanuvchi ishonchi</span>
+                <h3>Texnik qulaylik va xavfsizlik</h3>
+                <p>Muhim ma'lumotlar va hisoblar uchun professional himoya mavjud.</p>
+              </article>
             </div>
           </div>
-        </a>
+        </section>
 
-        <a href="" class="const-box-small">
-          <div class="elem-box">
-            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
-            <div class="cont-text">
-              <h2 class="tav">Mening Xizmatlarim</h2>
-              <p class="hav">Mening xizmatlarim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+        <section class="updates-section" id="updates">
+          <div class="section-wrap">
+            <div class="section-heading">
+              <div>
+                <span class="eyebrow">Yangiliklar va yangilanishlar</span>
+                <h2>Platforma rivojlanishi</h2>
+              </div>
+              <a href="{% url 'accounts:register' %}?tab=register" class="link-btn">Barcha yangiliklar</a>
+            </div>
+
+            <div class="updates-grid">
+              <article class="update-card">
+                <span class="update-tag">Platform</span>
+                <h3>Yangi xizmatlarni boshqarish paneli ishga tushdi</h3>
+                <p>Endi mahalla va uyga oid barcha axborotlar bir tizimda samarali ko'rinadi.</p>
+                <time>03.08.2026</time>
+              </article>
+              <article class="update-card">
+                <span class="update-tag">Xavfsizlik</span>
+                <h3>Foydalanuvchi tajribasi va himoya choralari yangilandi</h3>
+                <p>Yangi xavfsizlik va autentifikatsiya qarorlaridan foydalanish qulaylashtirildi.</p>
+                <time>29.07.2026</time>
+              </article>
+              <article class="update-card">
+                <span class="update-tag">Mahalla</span>
+                <h3>Jamoalararo muloqot va axborot almashinuvi imkoniyati kengaytirildi</h3>
+                <p>Ko'proq voz kechib qoladigan harakatlar va xizmatlar bir xil interfeysda birlashtirildi.</p>
+                <time>18.07.2026</time>
+              </article>
             </div>
           </div>
-        </a>
+        </section>
 
-        <a href="" class="const-box-small">
-          <div class="elem-box">
-            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
-            <div class="cont-text">
-              <h2 class="tav">Mening Uyim</h2>
-              <p class="hav">Mening uyim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
+        <section class="cta-banner section-wrap" aria-label="Ro'yxatdan o'tish">
+          <div class="cta-inner">
+            <div>
+              <span class="eyebrow">TINCHLIK bilan ishlash</span>
+              <h2>Mahallangiz uchun zamonaviy va professional platformani ishga tushiring.</h2>
             </div>
+            <a href="{% url 'accounts:register' %}?tab=register" class="btn btn-primary">Hozir boshlash</a>
           </div>
-        </a>
+        </section>
+      </main>
 
-        <a href="" class="const-box-big">
-          <div class="elem-box">
-            <img src="{% static 'images/mahalla.svg' %}" alt="" class="elem" id="tar2">
-            <div class="cont-text">
-              <h2 class="tav">Mening Mahallam</h2>
-              <p class="hav">Mening mahallam funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
-            </div>
+      <footer class="site-footer" id="contact">
+        <div class="section-wrap footer-inner">
+          <div class="footer-brand">
+            <div class="logo footer-logo">TINCHLIK</div>
+            <p>Mahalliy xizmatlar, jamoa va mulohazalarni bir vaqtning o'zida boshqarish uchun qulay platforma.</p>
           </div>
-        </a>
 
-        <a href="" class="const-box-big">
-          <div class="elem-box">
-            <img src="{% static 'images/maktab.svg' %}" alt="" class="elem" id="mak">
-            <div class="cont-text">
-              <h2 class="tav">Mening Maktabim</h2>
-              <p class="hav">Mening maktabim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
-            </div>
+          <div class="footer-links">
+            <h3>Sayt</h3>
+            <a href="{% url 'home' %}#top">Asosiy</a>
+            <a href="{% url 'home' %}#features">Xizmatlar</a>
+            <a href="{% url 'home' %}#community">Mahalla</a>
           </div>
-        </a>
 
-        <a href="" class="const-box-small">
-          <div class="elem-box">
-            <img src="{% static 'images/home.svg' %}" alt="" class="elem" >
-            <div class="cont-text">
-              <h2 class="tav">Mening Xizmatlarim</h2>
-              <p class="hav">Mening xizmatlarim funksiyasi sizga ko'plab qulayliklarni olib keladi</p>
-            </div>
+          <div class="footer-links">
+            <h3>Aloqa</h3>
+            <a href="{% url 'accounts:register' %}?tab=register">Ro'yxatdan o'tish</a>
+            <a href="{% url 'accounts:register' %}?tab=login">Kirish</a>
+            <a href="mailto:info@tinchlik24.uz">info@tinchlik24.uz</a>
           </div>
-        </a>
-      </div>
+        </div>
 
-      <script src="https://cdn.jsdelivr.net/npm/animejs/dist/bundles/anime.umd.min.js"></script>
-      <script src="{% static 'js/home.js' %}"></script>
-      <script>
-        const { animate, stagger } = anime;
-        const logo = document.querySelector(".logo");
+        <div class="section-wrap footer-bottom">
+          <span>© 2026 TINCHLIK</span>
+          <span>Mahalliy platforma</span>
+        </div>
+      </footer>
 
-        if (logo) {
-          logo.innerHTML = logo.textContent
-            .split("")
-            .map(letter => `<span>${letter}</span>`)
-            .join("");
-
-          const chars = document.querySelectorAll(".logo span");
-
-          animate(chars, {
-            y: { from: -20 },
-            opacity: { from: 0 },
-            rotate: { from: "-12deg" },
-            duration: 600,
-            delay: stagger(50),
-            ease: "outExpo"
-          });
-        }
-
-        const links = document.querySelectorAll(".list li a");
-
-        if (links.length) {
-          animate(links, {
-            y: { from: -18 },
-            opacity: { from: 0 },
-            scale: { from: 0.96 },
-            duration: 550,
-            delay: stagger(80),
-            ease: "outExpo"
-          });
-
-          links.forEach(link => {
-            link.addEventListener("mouseenter", () => {
-              animate(link, {
-                y: -3,
-                scale: 1.02,
-                duration: 180,
-                ease: "outQuad"
-              });
-            });
-
-            link.addEventListener("mouseleave", () => {
-              animate(link, {
-                y: 0,
-                scale: 1,
-                duration: 180,
-                ease: "outQuad"
-              });
-            });
-          });
-        }
-      </script>
-    </body>
-  </html>
-{% endif %}
-{% endblock %}
+      
+    {% endif %}
+    {% endblock %}

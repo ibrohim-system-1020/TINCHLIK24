@@ -4,7 +4,20 @@ import logging
 from django.conf import settings
 from django.http import HttpRequest, HttpResponse, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
-from telegram import Update
+
+try:
+    from telegram import Update
+    from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ConversationHandler, MessageHandler, filters
+    TELEGRAM_AVAILABLE = True
+except Exception:
+    Update = None
+    Application = None
+    CallbackQueryHandler = None
+    CommandHandler = None
+    ConversationHandler = None
+    MessageHandler = None
+    filters = None
+    TELEGRAM_AVAILABLE = False
 
 from bots.admin.handlers import (
     SEARCH_TERM,
@@ -13,24 +26,6 @@ from bots.admin.handlers import (
     search_term,
     start,
 )
-from bots.user_bot import (
-    ISM,
-    FAMILIYA,
-    EMAIL,
-    TELEFON,
-    PAROL,
-    PAROL2,
-    cancel,
-    contact_handler,
-    quickreg_email,
-    quickreg_familiya,
-    quickreg_ism,
-    quickreg_parol,
-    quickreg_parol2,
-    quickreg_telefon,
-    start as user_start,
-)
-from telegram.ext import Application, CallbackQueryHandler, CommandHandler, ConversationHandler, MessageHandler, filters
 
 logger = logging.getLogger("telegram_webhooks")
 
@@ -50,33 +45,6 @@ def _validate_webhook_request(request: HttpRequest, bot_type: str) -> bool:
 
 
 @csrf_exempt
-def user_telegram_webhook(request: HttpRequest):
-    if request.method != "POST":
-        return HttpResponse(status=405)
-
-    if not _validate_webhook_request(request, "user"):
-        return HttpResponse(status=403)
-
-    try:
-        payload = json.loads(request.body.decode("utf-8"))
-    except (TypeError, ValueError):
-        return JsonResponse({"ok": False}, status=400)
-
-    app = _get_user_application()
-    update = Update.de_json(payload, app.bot)
-    if update is None:
-        return JsonResponse({"ok": False}, status=400)
-
-    try:
-        app.process_update(update)
-    except Exception:
-        logger.exception("User webhook update processing failed.")
-        return JsonResponse({"ok": False}, status=500)
-
-    return JsonResponse({"ok": True})
-
-
-@csrf_exempt
 def admin_telegram_webhook(request: HttpRequest):
     if request.method != "POST":
         return HttpResponse(status=405)
@@ -88,6 +56,10 @@ def admin_telegram_webhook(request: HttpRequest):
         payload = json.loads(request.body.decode("utf-8"))
     except (TypeError, ValueError):
         return JsonResponse({"ok": False}, status=400)
+
+    if not TELEGRAM_AVAILABLE:
+        logger.warning("Telegram package not installed; webhook disabled.")
+        return JsonResponse({"ok": False}, status=503)
 
     app = _get_admin_application()
     update = Update.de_json(payload, app.bot)
@@ -103,30 +75,10 @@ def admin_telegram_webhook(request: HttpRequest):
     return JsonResponse({"ok": True})
 
 
-def _get_user_application() -> Application:
-    app = Application.builder().token(settings.USER_BOT_TOKEN).build()
-
-    conversation = ConversationHandler(
-        entry_points=[CommandHandler("start", user_start)],
-        states={
-            ISM: [MessageHandler(filters.TEXT & ~filters.COMMAND, quickreg_ism)],
-            FAMILIYA: [MessageHandler(filters.TEXT & ~filters.COMMAND, quickreg_familiya)],
-            EMAIL: [MessageHandler(filters.TEXT & ~filters.COMMAND, quickreg_email)],
-            TELEFON: [MessageHandler((filters.TEXT | filters.CONTACT) & ~filters.COMMAND, quickreg_telefon)],
-            PAROL: [MessageHandler(filters.TEXT & ~filters.COMMAND, quickreg_parol)],
-            PAROL2: [MessageHandler(filters.TEXT & ~filters.COMMAND, quickreg_parol2)],
-        },
-        fallbacks=[CommandHandler("cancel", cancel)],
-        allow_reentry=True,
-    )
-
-    app.add_handler(conversation)
-    app.add_handler(MessageHandler(filters.CONTACT, contact_handler))
-    app.add_error_handler(lambda update, context: logger.exception("User bot xatolik: %s", context.error))
-    return app
-
-
 def _get_admin_application() -> Application:
+    if not TELEGRAM_AVAILABLE:
+        raise RuntimeError("telegram package is not available")
+
     app = Application.builder().token(settings.ADMIN_BOT_TOKEN).build()
 
     conversation = ConversationHandler(
