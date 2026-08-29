@@ -21,7 +21,9 @@ def env_bool(name: str, default: bool = False) -> bool:
 
 
 def env_list(name: str, default: str) -> list[str]:
-    value = os.getenv(name, default)
+    value = os.getenv(name)
+    if not value or not value.strip():
+        value = default
     return [item.strip() for item in value.split(",") if item.strip()]
 
 
