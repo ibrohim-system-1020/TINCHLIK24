@@ -164,10 +164,30 @@ CHANNEL_LAYERS = {"default": {"BACKEND": "channels.layers.InMemoryChannelLayer"}
 DATABASE_URL = os.getenv("DATABASE_URL")
 if DATABASE_URL:
     import dj_database_url
+    from urllib.parse import urlparse, parse_qs
 
-    DATABASES = {
-        'default': dj_database_url.config(default=DATABASE_URL, conn_max_age=600, ssl_require=DATABASE_URL.startswith('postgres'))
-    }
+    # Use dj_database_url to get the main DATABASES config
+    parsed_db = dj_database_url.parse(DATABASE_URL, conn_max_age=600)
+
+    # Ensure sslmode and channel_binding from the connection string query are preserved
+    qs = parse_qs(urlparse(DATABASE_URL).query)
+    sslmode = qs.get('sslmode', [None])[0]
+    channel_binding = qs.get('channel_binding', [None])[0]
+
+    options = parsed_db.get('OPTIONS', {}) or {}
+    if sslmode:
+        options['sslmode'] = sslmode
+    else:
+        # default to require for remote/Neon connections if not explicitly set
+        if DATABASE_URL.startswith('postgres') or DATABASE_URL.startswith('postgresql'):
+            options.setdefault('sslmode', 'require')
+    if channel_binding:
+        options['channel_binding'] = channel_binding
+
+    if options:
+        parsed_db['OPTIONS'] = options
+
+    DATABASES = {'default': parsed_db}
 else:
     DATABASES = {
         'default': {

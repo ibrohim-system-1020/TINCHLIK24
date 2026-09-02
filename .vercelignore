@@ -1,0 +1,16 @@
+.venv-migrate
+.venv
+venv
+env
+.env
+.env.local
+db.sqlite3
+staticfiles
+media
+node_modules
+.git
+.vscode
+*.pyc
+__pycache__/
+dist/
+build/

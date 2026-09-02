@@ -42,3 +42,6 @@ htmlcov/
 
 # Optional package cache
 pip-wheel-metadata/
+.vercel
+.env*
+ .venv-migrate
