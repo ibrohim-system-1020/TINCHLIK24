@@ -1,9 +1,14 @@
 {% extends 'base.html' %}
 {% load static %}
-<link rel="stylesheet" href="{% static 'css/market.css' %}">
-{% block title %}+ E'lon joylash{% endblock %}
+
+{% block title %}E'lon joylash{% endblock %}
+
+{% block extra_css %}
+  <link rel="stylesheet" href="{% static 'css/market.css' %}">
+{% endblock %}
+
 {% block content %}
-<section class="market-create-page section-wrap">
+<section class="market-create-page">
   <div class="market-create-shell">
     <header class="market-create-header">
       <nav class="market-breadcrumbs" aria-label="Breadcrumb">
@@ -14,43 +19,61 @@
         <span>E'lon joylash</span>
       </nav>
 
-      <div class="market-create-title-wrap">
-        <span class="eyebrow">Bozor</span>
-        <h1>E'lon joylash</h1>
-        <p>Mahsulot yoki xizmat haqidagi ma'lumotlarni kiriting</p>
+      <div class="market-create-heading-row">
+        <div class="market-create-heading">
+          <span class="market-badge">Yangi e'lon</span>
+          <h1>E'lon joylash</h1>
+          <p>Mahsulot yoki xizmatingizni tez va tushunarli tarzda e'lon qiling.</p>
+        </div>
+
+        <div class="market-status-card" aria-live="polite">
+          <span class="status-chip status-chip--soft">Qoralama</span>
+          <strong>Yangi matn tayyor</strong>
+        </div>
       </div>
     </header>
 
     <div class="market-create-layout">
-      <div class="market-create-main">
-        <form method="post" enctype="multipart/form-data" class="create-form">
+      <main class="market-editor">
+        <form method="post" enctype="multipart/form-data" class="create-form" autocomplete="off">
           {% csrf_token %}
 
-          <section class="form-card">
-            <div class="card-header">
-              <h2>Asosiy ma'lumotlar</h2>
+          <section class="editor-section">
+            <div class="editor-section-header">
+              <div class="section-number">01</div>
+              <div class="section-copy">
+                <span>Asosiy ma'lumotlar</span>
+                <small>E'loningizning asosiy ma'lumotlarini kiriting.</small>
+              </div>
             </div>
 
             <div class="field-grid">
-              <div class="form-row form-row--full">
-                <label for="id_title">Mahsulot nomi</label>
-                {{ form.title }}
+              <div class="field field-wide">
+                <label for="id_title">E'lon nomi</label>
+                <div class="input-shell{% if form.title.errors %} input-shell--error{% endif %}">
+                  {{ form.title }}
+                </div>
+                <small class="field-hint">Masalan: iPhone 13 Pro 256GB</small>
                 {% if form.title.errors %}
                   <div class="field-errors">{{ form.title.errors }}</div>
                 {% endif %}
               </div>
 
-              <div class="form-row">
+              <div class="field">
                 <label for="id_category">Kategoriya</label>
-                {{ form.category }}
+                <div class="input-shell{% if form.category.errors %} input-shell--error{% endif %}">
+                  {{ form.category }}
+                </div>
                 {% if form.category.errors %}
                   <div class="field-errors">{{ form.category.errors }}</div>
                 {% endif %}
               </div>
 
-              <div class="form-row">
+              <div class="field">
                 <label for="id_condition">Holati</label>
-                {{ form.condition }}
+                <div class="input-shell{% if form.condition.errors %} input-shell--error{% endif %}">
+                  {{ form.condition }}
+                </div>
                 {% if form.condition.errors %}
                   <div class="field-errors">{{ form.condition.errors }}</div>
                 {% endif %}
@@ -58,65 +81,93 @@
             </div>
           </section>
 
-          <section class="form-card">
-            <div class="card-header">
-              <h2>Narx</h2>
+          <section class="editor-section">
+            <div class="editor-section-header">
+              <div class="section-number">02</div>
+              <div class="section-copy">
+                <span>Narx va kategoriya</span>
+                <small>Foydalanuvchilar uchun aniq va jozibali narxni belgilang.</small>
+              </div>
             </div>
 
-            <div class="field-grid">
-              <div class="form-row form-row--full">
-                <label for="id_price">Narxi</label>
-                <div class="price-field-wrap">
-                  {{ form.price }}
-                  <span class="currency-pill">UZS</span>
+            <div class="field-grid field-grid--compact">
+              <div class="field field-wide">
+                <label for="id_price">Narx</label>
+                <div class="price-shell{% if form.price.errors %} input-shell--error{% endif %}">
+                  <div class="price-input-wrap">{{ form.price }}</div>
+                  <span class="currency-token">so'm</span>
                 </div>
                 {% if form.price.errors %}
                   <div class="field-errors">{{ form.price.errors }}</div>
                 {% endif %}
+              </div>
 
-                <label class="checkbox-row" for="id_negotiable">
+              <div class="field field-inline-checkbox">
+                <label class="checkbox-wrap" for="id_negotiable">
                   {{ form.negotiable }}
-                  <span>Kelishiladi</span>
+                  <span class="checkbox-text">Kelishiladi</span>
                 </label>
               </div>
             </div>
           </section>
 
-          <section class="form-card">
-            <div class="card-header">
-              <h2>Tavsif</h2>
+          <section class="editor-section">
+            <div class="editor-section-header">
+              <div class="section-number">03</div>
+              <div class="section-copy">
+                <span>Tavsif</span>
+                <small>Mahsulotingizni batafsil va ishonchli qilib bayon qiling.</small>
+              </div>
             </div>
 
-            <div class="form-row form-row--full">
+            <div class="field field-wide">
               <label for="id_description">Mahsulot haqida batafsil</label>
-              {{ form.description }}
-              <div class="helper-text">Mahsulotning holati, xususiyatlari va boshqa muhim ma'lumotlarni yozing.</div>
+              <div class="textarea-shell{% if form.description.errors %} input-shell--error{% endif %}">
+                {{ form.description }}
+              </div>
+              <div class="field-row-meta">
+                <small class="field-hint">Mahsulotning holati, xususiyatlari va muhim nuqtalarni yozing.</small>
+                <span class="char-counter" id="desc-count">0/500</span>
+              </div>
               {% if form.description.errors %}
                 <div class="field-errors">{{ form.description.errors }}</div>
               {% endif %}
             </div>
           </section>
 
-          <section class="form-card">
-            <div class="card-header">
-              <h2>Rasmlar</h2>
+          <section class="editor-section">
+            <div class="editor-section-header">
+              <div class="section-number">04</div>
+              <div class="section-copy">
+                <span>Rasmlar</span>
+                <small>Iltimos, kamida 3 ta sifatli rasm yuklang.</small>
+              </div>
             </div>
 
-            <div class="form-row form-row--full">
+            <div class="field field-wide">
               <label>Mahsulot rasmlari</label>
 
               <div class="upload-shell">
-                <div class="upload-zone">
-                  <div class="upload-icon" aria-hidden="true">⇪</div>
-                  <div class="upload-content">
-                    <strong>Rasm qo'shish</strong>
-                    <span>PNG, JPG yoki WEBP</span>
+                <label class="upload-zone" for="id_images">
+                  <div class="upload-graphic" aria-hidden="true">
+                    <svg viewBox="0 0 24 24" role="img" aria-label="Upload icon">
+                      <path d="M12 16V4m0 0l-4 4m4-4l4 4M5 18.5A2.5 2.5 0 0 0 7.5 21h9A2.5 2.5 0 0 0 19 18.5" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round"/>
+                    </svg>
                   </div>
+                  <div class="upload-copy">
+                    <strong>Rasm yuklang</strong>
+                    <span>Rasmni bu yerga tashlang yoki kompyuterdan tanlang</span>
+                  </div>
+                  <span class="upload-button">Rasm tanlash</span>
+                </label>
+
+                <div class="file-input-shell{% if image_form.images.errors %} input-shell--error{% endif %}">
+                  {{ image_form.images }}
                 </div>
-                {{ image_form.images }}
               </div>
 
               <div id="image-previews" class="image-previews" aria-live="polite"></div>
+
               {% if image_form.images.errors %}
                 <div class="field-errors">{{ image_form.images.errors }}</div>
               {% endif %}
@@ -125,41 +176,67 @@
 
           <div class="submit-row">
             <a href="{% url 'market:listings' %}" class="btn btn-secondary">Bekor qilish</a>
-            <button type="submit" class="btn btn-primary" id="submit-button">{% if editing %}Saqlash{% else %}E'lonni joylash{% endif %}</button>
+            <button type="submit" class="btn btn-primary" id="submit-button">
+              <span class="btn-label">{% if editing %}Saqlash{% else %}E'lonni joylash{% endif %}</span>
+            </button>
           </div>
         </form>
-      </div>
+      </main>
 
       <aside class="market-create-sidebar">
-        <div class="info-card">
-          <div class="info-card__header">
-            <span class="eyebrow accent">Yordam</span>
-            <h3>Yaxshi e'lon uchun tavsiyalar</h3>
+        <div class="summary-panel panel-card">
+          <div class="panel-header-row">
+            <span class="mini-badge">Live preview</span>
+            <span class="summary-status">Yangi</span>
+          </div>
+
+          <div class="preview-card">
+            <div class="preview-media">
+              <div class="preview-placeholder">
+                <svg viewBox="0 0 24 24" aria-hidden="true">
+                  <path d="M4 19.5V7.2A2.2 2.2 0 0 1 6.2 5h11.6A2.2 2.2 0 0 1 20 7.2v12.3H4zm3.5-8.5a1.5 1.5 0 1 0 0-3a1.5 1.5 0 0 0 0 3zm7 6.5l-2.8-3.5-2.2 2.7-1.5-1.8L5 17.5h14l-4.5-5.5z" fill="currentColor"/>
+                </svg>
+              </div>
+            </div>
+
+            <div class="preview-body">
+              <span class="preview-label">E'lon</span>
+              <h3 id="preview-title">E'lon nomi</h3>
+              <div class="preview-meta">
+                <span id="preview-category">Kategoriya</span>
+                <span>•</span>
+                <span id="preview-condition">Holat</span>
+              </div>
+              <div class="preview-price" id="preview-price">Narx ko'rsatilmagan</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="tips-panel panel-card">
+          <div class="panel-title-row">
+            <span class="mini-badge mini-badge--alt">Yaxshi e'lon</span>
           </div>
 
           <ul class="tips-list">
-            <li>Mahsulot nomini aniq va qisqacha yozing.</li>
-            <li>Rasmlar sifatli va kamida 3 ta bo'lsin.</li>
-            <li>Narxni real bozor ko'rsatkichlariga qarab belgilang.</li>
-            <li>Holat va tavsifni aniq ayting, muhim xususiyatlarni qoldirmang.</li>
+            <li>Aniq sarlavha yozing.</li>
+            <li>Haqiqiy va sifatli rasm qo'shing.</li>
+            <li>Batafsil tavsif kiriting.</li>
           </ul>
         </div>
 
-        <div class="info-card info-card--soft">
-          <div class="info-card__header">
-            <span class="eyebrow accent">E'lon tayyorgarligi</span>
-            <h3>To'liqlik ko'rsatkichi</h3>
+        <div class="completion-panel panel-card">
+          <div class="completion-header">
+            <span>E'lon tayyorligi</span>
+            <strong id="completion-value">0%</strong>
           </div>
-
-          <div class="progress-meter" aria-label="E'lon to'liqlik darajasi">
-            <span style="width: 82%"></span>
+          <div class="progress-meter" aria-label="E'lon tayyorligi">
+            <span id="completion-bar"></span>
           </div>
-
-          <p>Nom, narx va tasvirlar to'liq bo'lsa, e'lon ko'proq e'tiborga ega bo'ladi.</p>
         </div>
       </aside>
     </div>
   </div>
 </section>
+
 <script src="{% static 'js/market.js' %}"></script>
 {% endblock %}
