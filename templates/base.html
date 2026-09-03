@@ -27,7 +27,7 @@
 
     <title>{% block title %}TINCHLIK | MFY{% endblock %}</title>
     <link rel="stylesheet" href="{% static 'css/theme.css' %}" />
-    {% if user.is_authenticated -+%}
+    {% if user.is_authenticated %}
       <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
     {% endif %}
 
