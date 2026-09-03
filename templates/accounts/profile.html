@@ -12,9 +12,9 @@
         </div>
         <div class="profile-badge {% if profile_user.is_phone_verified %}badge-success{% else %}badge-warning{% endif %}">
           {% if profile_user.is_phone_verified %}
-            ✅ Tasdiqlangan
+            ✓ Tasdiqlangan
           {% else %}
-            ⚠️ Tasdiqlanmagan
+            ! Tasdiqlanmagan
           {% endif %}
         </div>
       </header>
@@ -51,15 +51,15 @@
         </div>
 
         <div class="detail-list">
-          <div class="detail-item"><span>Ism:</span> {{ profile_user.first_name|default:'-' }}</div>
-          <div class="detail-item"><span>Familiya:</span> {{ profile_user.last_name|default:'-' }}</div>
-          <div class="detail-item"><span>Email:</span> {{ profile_user.email }}</div>
-          <div class="detail-item"><span>Telefon:</span> {{ profile_user.telefon|default:'-' }}</div>
-          <div class="detail-item"><span>Account ID:</span> {{ profile_user.id }}</div>
-          <div class="detail-item"><span>Telegram username:</span> {{ profile_user.telegram_username|default:'-' }}</div>
-          <div class="detail-item"><span>Telegram ID:</span> {{ profile_user.telegram_id|default:'-' }}</div>
-          <div class="detail-item"><span>Ro'yxatdan o'tgan sana:</span> {{ profile_user.date_joined|date:'Y-m-d H:i' }}</div>
-          <div class="detail-item"><span>Oxirgi login:</span> {{ profile_user.last_login|default:'—'|date:'Y-m-d H:i' }}</div>
+          <div class="detail-item"><span>Ism:</span> <strong>{{ profile_user.first_name|default:'-' }}</strong></div>
+          <div class="detail-item"><span>Familiya:</span> <strong>{{ profile_user.last_name|default:'-' }}</strong></div>
+          <div class="detail-item"><span>Email:</span> <strong>{{ profile_user.email }}</strong></div>
+          <div class="detail-item"><span>Telefon:</span> <strong>{{ profile_user.telefon|default:'-' }}</strong></div>
+          <div class="detail-item"><span>Account ID:</span> <strong>{{ profile_user.id }}</strong></div>
+          <div class="detail-item"><span>Telegram username:</span> <strong>{{ profile_user.telegram_username|default:'-' }}</strong></div>
+          <div class="detail-item"><span>Telegram ID:</span> <strong>{{ profile_user.telegram_id|default:'-' }}</strong></div>
+          <div class="detail-item"><span>Ro'yxatdan o'tgan sana:</span> <strong>{{ profile_user.date_joined|date:'Y-m-d H:i' }}</strong></div>
+          <div class="detail-item"><span>Oxirgi login:</span> <strong>{{ profile_user.last_login|default:'—'|date:'Y-m-d H:i' }}</strong></div>
         </div>
       </section>
 
@@ -100,13 +100,13 @@
 
 <style>
   .profile-page {
-    padding: 32px 20px;
-    min-height: calc(100vh - 0px);
+    padding: 32px 20px 56px;
+    min-height: calc(100vh - 80px);
     background: var(--bg);
   }
 
   .profile-shell {
-    width: min(100%, 1200px);
+    width: min(100%, 1180px);
     margin: 0 auto;
   }
 
@@ -119,13 +119,13 @@
   .profile-header {
     display: flex;
     justify-content: space-between;
-    align-items: flex-start;
+    align-items: center;
     gap: 24px;
     padding: 28px 30px;
     border: 1px solid var(--border);
     border-radius: 28px;
-    background: var(--surface);
-    box-shadow: var(--shadow);
+    background: rgba(255,255,255,0.8);
+    box-shadow: var(--shadow-soft);
   }
 
   .section-label {
@@ -136,9 +136,16 @@
     margin-bottom: 8px;
   }
 
+  .profile-header h1 {
+    margin: 0;
+    font-size: clamp(2rem, 3vw, 3rem);
+    letter-spacing: -0.05em;
+  }
+
   .section-note {
     color: var(--muted);
     margin-top: 10px;
+    line-height: 1.7;
   }
 
   .profile-badge {
@@ -148,43 +155,55 @@
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    white-space: nowrap;
   }
 
   .badge-success {
     background: rgba(34, 197, 94, 0.12);
     color: #166534;
+    border: 1px solid rgba(34, 197, 94, 0.2);
   }
 
   .badge-warning {
     background: rgba(245, 158, 11, 0.12);
     color: #854d0e;
-  }
-
-  .profile-grid {
-    display: grid;
-    gap: 24px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
   }
 
   .card {
-    background: var(--card-bg);
-    border: 1px solid var(--border-color);
-    border-radius: 30px;
-    padding: 28px;
+    background: rgba(255,255,255,0.82);
+    border: 1px solid var(--border);
+    border-radius: 28px;
+    padding: 26px 24px;
+    box-shadow: var(--shadow-soft);
+    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
+  }
+
+  .card:hover,
+  .card:focus-within {
+    transform: translateY(-2px);
     box-shadow: var(--shadow);
-    transition: transform 0.25s ease, box-shadow 0.3s ease, background-color 0.3s ease, border-color 0.2s ease;
+  }
+
+  .card-title {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-bottom: 18px;
+  }
+
+  .card-title h2 {
+    margin: 0;
+    font-size: clamp(1.3rem, 2vw, 1.8rem);
+    letter-spacing: -0.04em;
   }
 
   .card-top {
     display: flex;
     align-items: center;
     gap: 18px;
-    margin-bottom: 26px;
-  }
-
-  .card:hover,
-  .card:focus-within {
-    transform: translateY(-3px);
-    box-shadow: 0 28px 56px rgba(31, 44, 66, 0.12);
+    margin-bottom: 20px;
   }
 
   .avatar-shell {
@@ -192,7 +211,7 @@
     height: 90px;
     border-radius: 24px;
     overflow: hidden;
-    background: #111111;
+    background: linear-gradient(135deg, var(--primary), #8ec5ff);
     display: grid;
     place-items: center;
   }
@@ -210,54 +229,128 @@
   }
 
   .meta-label {
-    color: var(--text-secondary);
+    color: var(--muted);
     margin-bottom: 8px;
-    font-size: 14px;
+    font-size: 0.76rem;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
   }
 
   .meta-note {
-    color: var(--text-secondary);
-    margin-top: 4px;
+    color: var(--muted);
+    margin-top: 6px;
   }
 
   .detail-list {
     display: grid;
-    gap: 14px;
+    gap: 12px;
   }
 
   .detail-item {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    gap: 16px;
+    gap: 18px;
     padding: 16px 18px;
-    background: var(--surface-strong);
-    border: 1px solid var(--border-color);
+    background: rgba(246,248,252,0.8);
+    border: 1px solid var(--border);
     border-radius: 16px;
-    font-size: 15px;
-    color: var(--text-primary);
-    transition: transform 0.15s ease, background-color 0.18s ease, border-color 0.18s ease;
+    color: var(--text);
     overflow-wrap: anywhere;
   }
 
-  .detail-item:hover {
-    transform: translateX(3px);
-    background: rgba(96, 165, 250, 0.08);
+  .detail-item span {
+    color: var(--muted);
+    font-weight: 600;
   }
 
-  .detail-item span {
-    color: var(--text-secondary);
+  .detail-item strong {
+    font-size: 0.96rem;
+    text-align: right;
   }
 
   .admin-card {
-    border: 1px solid rgba(37, 99, 235, 0.12);
+    border-color: rgba(47,111,237,0.18);
+    background: linear-gradient(180deg, rgba(47,111,237,0.04), rgba(255,255,255,0.84));
   }
 
   .admin-actions {
     display: grid;
     gap: 12px;
-    margin-top: 12px;
   }
+
+  .admin-action-link {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 48px;
+    padding: 0 16px;
+    border-radius: 14px;
+    text-decoration: none;
+    font-weight: 700;
+    background: var(--primary);
+    color: white;
+  }
+
+  .admin-action-link.secondary {
+    background: rgba(255,255,255,0.7);
+    color: var(--text);
+    border: 1px solid var(--border);
+  }
+
+  .history-table-wrap {
+    overflow-x: auto;
+  }
+
+  .history-table {
+    width: 100%;
+    border-collapse: collapse;
+    background: rgba(246,248,252,0.8);
+    border-radius: 16px;
+    overflow: hidden;
+  }
+
+  .history-table th,
+  .history-table td {
+    padding: 14px 16px;
+    text-align: left;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .history-table th {
+    color: var(--muted);
+    font-size: 0.78rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  .history-table td {
+    color: var(--text);
+  }
+
+  .empty-state {
+    color: var(--muted);
+    padding: 8px 0 0;
+  }
+
+  @media (max-width: 640px) {
+    .profile-header {
+      flex-direction: column;
+      align-items: flex-start;
+    }
+
+    .detail-item {
+      flex-direction: column;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .detail-item strong {
+      text-align: left;
+    }
+  }
+</style>
+{% endblock %}
 
   .admin-action-link {
     display: inline-flex;

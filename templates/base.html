@@ -803,7 +803,7 @@
 
     <!-- AUTHENTICATED NAVBAR -->
     {% if user.is_authenticated %}
-    <nav class="topbar" role="navigation" aria-label="Mahalla kabineti navigatsiyasi">
+    <nav class="topbar auth-topbar" role="navigation" aria-label="Mahalla kabineti navigatsiyasi">
       <div class="brand">
         <a href="{% url 'home' %}" class="logo-link" aria-label="Bosh sahifa">
           <img src="{% static 'images/fav.png' %}" alt="TINCHLIK logotipi" class="brand-logo" />
@@ -815,17 +815,33 @@
       </div>
 
       <div class="nav-links" role="menubar" aria-label="Asosiy menyu">
-        <a class="nav-link" href="{% url 'home' %}"><span class="icon">🏠</span><span>Bosh sahifa</span></a>
-        <a class="nav-link" href="{% url 'home' %}#services"><span class="icon">🛎️</span><span>Mahalla xizmatlari</span></a>
-        <a class="nav-link" href="{% url 'market:listings' %}"><span class="icon">🛍️</span><span>Mahalla bozori</span></a>
-        <a class="nav-link" href="{% url 'market:my_listings' %}"><span class="icon">📦</span><span>Mening sotuvlarim</span></a>
-        <a class="nav-link" href="{% url 'accounts:profile' %}"><span class="icon">📩</span><span>Murojaatlarim</span></a>
-        <a class="nav-link" href="{% url 'chat:chat' %}"><span class="icon">💬</span><span>Chat</span></a>
-        <a class="nav-link" href="{% url 'home' %}#updates"><span class="icon">📰</span><span>Yangiliklar</span></a>
+        <a class="nav-link active" href="{% url 'home' %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-7H9v7H5a1 1 0 0 1-1-1v-8.5Z"/></svg>
+          <span>Bosh sahifa</span>
+        </a>
+        <a class="nav-link" href="{% url 'chat:chat' %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M5 18.5V6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7A2.5 2.5 0 0 1 16.5 16H9l-4 2.5Z"/></svg>
+          <span>Chat</span>
+        </a>
+        <a class="nav-link" href="{% url 'home' %}#services">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h10a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H12l-4 3v-3H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm2 4h6M9 11h6M9 14h4"/></svg>
+          <span>Xizmatlar</span>
+        </a>
+        <a class="nav-link" href="{% url 'market:listings' %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Zm8 3 6.5-3.7M12 11.5v8m0-8-6.5-3.7"/></svg>
+          <span>Bozor</span>
+        </a>
+        <a class="nav-link" href="{% url 'accounts:profile' %}">
+          <svg class="nav-icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-7 7a7 7 0 0 1 14 0"/></svg>
+          <span>Profil</span>
+        </a>
       </div>
 
       <div class="nav-actions">
-            <button class="hamburger" type="button" aria-label="Menyu" aria-expanded="false">☰</button>
+        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Temani o'zgartirish">☀️</button>
+        <button class="hamburger" type="button" aria-label="Menyu" aria-expanded="false" aria-controls="mobilePanel" aria-haspopup="true">
+          <span></span><span></span><span></span>
+        </button>
 
         <div class="avatar-wrap">
           <button class="avatar-button" type="button" aria-haspopup="true" aria-expanded="false">
@@ -852,16 +868,12 @@
             </div>
 
             <div class="dropdown-grid">
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">👤</div><div>Profilim</div></a>
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">📄</div><div>Shaxsiy ma’lumotlar</div></a>
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">✏️</div><div>Profilni tahrirlash</div></a>
-              <a href="{% url 'market:my_listings' %}" class="dd-item"><div class="dd-icon">📦</div><div>Mening sotuvlarim</div></a>
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">📩</div><div>Murojaatlarim</div></a>
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">🔔</div><div>Bildirishnomalar</div></a>
-              <a href="{% url 'accounts:security' %}" class="dd-item"><div class="dd-icon">🔐</div><div>Xavfsizlik</div></a>
-              <a href="{% url 'accounts:security' %}" class="dd-item"><div class="dd-icon">🔑</div><div>Parolni o‘zgartirish</div></a>
-              <a href="{% url 'accounts:profile' %}" class="dd-item"><div class="dd-icon">⚙️</div><div>Sozlamalar</div></a>
-              <a href="{% url 'home' %}" class="dd-item"><div class="dd-icon">❔</div><div>Yordam</div></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><span class="dd-icon">👤</span><span>Profilim</span></a>
+              <a href="{% url 'accounts:profile' %}" class="dd-item"><span class="dd-icon">📄</span><span>Ma'lumotlar</span></a>
+              <a href="{% url 'market:my_listings' %}" class="dd-item"><span class="dd-icon">📦</span><span>Sotuvlar</span></a>
+              <a href="{% url 'chat:chat' %}" class="dd-item"><span class="dd-icon">💬</span><span>Chat</span></a>
+              <a href="{% url 'accounts:security' %}" class="dd-item"><span class="dd-icon">🔐</span><span>Xavfsizlik</span></a>
+              <a href="{% url 'home' %}#services" class="dd-item"><span class="dd-icon">⚙️</span><span>Xizmatlar</span></a>
             </div>
 
             <div class="dd-actions">
@@ -871,18 +883,18 @@
         </div>
       </div>
 
-      <div class="mobile-panel" aria-hidden="true">
-        <div class="mobile-menu" role="menu">
-          <a class="nav-link" href="{% url 'home' %}"><span class="icon">🏠</span><span>Bosh sahifa</span></a>
-          <a class="nav-link" href="{% url 'home' %}#services"><span class="icon">🛎️</span><span>Mahalla xizmatlari</span></a>
-          <a class="nav-link" href="{% url 'market:listings' %}"><span class="icon">🛍️</span><span>Mahalla bozori</span></a>
-          <a class="nav-link" href="{% url 'market:my_listings' %}"><span class="icon">📦</span><span>Mening sotuvlarim</span></a>
-          <a class="nav-link" href="{% url 'accounts:profile' %}"><span class="icon">�</span><span>Murojaatlarim</span></a>
-          <a class="nav-link" href="{% url 'chat:chat' %}"><span class="icon">💬</span><span>Chat</span></a>
-          <a class="nav-link" href="{% url 'accounts:logout' %}"><span class="icon">🚪</span><span>Chiqish</span></a>
-        </div>
-      </div>
     </nav>
+
+    <div class="mobile-panel" id="mobilePanel" aria-hidden="true">
+      <div class="mobile-menu" role="menu" aria-label="Mobil menyu">
+        <a class="nav-link" href="{% url 'home' %}"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 10.5 12 4l8 6.5V19a1 1 0 0 1-1 1h-4v-7H9v7H5a1 1 0 0 1-1-1v-8.5Z"/></svg><span>Bosh sahifa</span></a>
+        <a class="nav-link" href="{% url 'chat:chat' %}"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M5 18.5V6.5A2.5 2.5 0 0 1 7.5 4h9A2.5 2.5 0 0 1 19 6.5v7A2.5 2.5 0 0 1 16.5 16H9l-4 2.5Z"/></svg><span>Chat</span></a>
+        <a class="nav-link" href="{% url 'home' %}#services"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M7 5h10a2 2 0 0 1 2 2v8.5a2 2 0 0 1-2 2H12l-4 3v-3H7a2 2 0 0 1-2-2V7a2 2 0 0 1 2-2Zm2 4h6M9 11h6M9 14h4"/></svg><span>Xizmat</span></a>
+        <a class="nav-link" href="{% url 'market:listings' %}"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M4 8.5 12 4l8 4.5v7L12 20l-8-4.5v-7Zm8 3 6.5-3.7M12 11.5v8m0-8-6.5-3.7"/></svg><span>Bozor</span></a>
+        <a class="nav-link" href="{% url 'accounts:profile' %}"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M12 12a3.5 3.5 0 1 0 0-7 3.5 3.5 0 0 0 0 7Zm-7 7a7 7 0 0 1 14 0"/></svg><span>Profil</span></a>
+        <a class="nav-link" href="{% url 'accounts:logout' %}"><svg class="nav-icon" viewBox="0 0 24 24"><path d="M9 7V5a2 2 0 0 1 2-2h6a2 2 0 0 1-2 2v14a2 2 0 0 1-2 2h-6a2 2 0 0 1-2-2v-2M4 12h10m0 0-3-3m3 3-3 3"/></svg><span>Chiqish</span></a>
+      </div>
+    </div>
     {% endif %}
 
     <!-- SAHIFALAR SHU YERGA KELADI -->

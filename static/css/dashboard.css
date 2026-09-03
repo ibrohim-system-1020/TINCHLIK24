@@ -296,33 +296,65 @@ html[data-theme="light"] .topbar {
 .mobile-panel {
   position: fixed;
   inset: 0;
-  z-index: 90;
-  background: rgba(15, 23, 42, 0.28);
-  display: none;
+  width: 100%;
+  height: 100dvh;
+  z-index: 9998;
+  background: rgba(15, 23, 42, 0.38);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  visibility: hidden;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.22s ease, visibility 0.22s ease;
 }
 
 .mobile-panel.open {
-  display: block;
+  visibility: visible;
+  opacity: 1;
+  pointer-events: auto;
 }
 
 .mobile-menu {
   position: absolute;
-  right: 0;
   top: 0;
+  right: 0;
   width: min(320px, 86vw);
-  height: 100%;
+  height: 100dvh;
+  max-height: 100dvh;
   background: var(--card-bg);
   border-left: 1px solid var(--nav-border);
   box-shadow: -18px 0 30px rgba(15, 23, 42, 0.18);
-  padding: 18px 14px;
+  padding: max(16px, calc(env(safe-area-inset-top) + 12px)) 14px max(18px, calc(env(safe-area-inset-bottom) + 12px));
   display: flex;
   flex-direction: column;
   gap: 8px;
+  overflow-y: auto;
+  overscroll-behavior: contain;
+  transform: translateX(102%);
+  transition: transform 0.25s ease;
+}
+
+.mobile-panel.open .mobile-menu {
+  transform: translateX(0);
 }
 
 .mobile-menu .nav-link {
   width: 100%;
   justify-content: flex-start;
+  min-height: 44px;
+  padding-inline: 12px;
+}
+
+body.mobile-menu-open {
+  overflow: hidden;
+  touch-action: none;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .mobile-panel,
+  .mobile-menu {
+    transition: none;
+  }
 }
 
 @media (max-width: 880px) {
