@@ -58,7 +58,7 @@
   }
 
   function handleResize() {
-    if (window.innerWidth > 880) {
+    if (window.innerWidth >= 1024) {
       closeMobileMenu();
     }
   }
@@ -90,7 +90,7 @@
     });
 
     mobilePanel.addEventListener('click', function (event) {
-      if (event.target === mobilePanel) {
+      if (event.target === mobilePanel || !mobileMenu.contains(event.target)) {
         closeMobileMenu();
       }
     });
@@ -107,8 +107,10 @@
 
     const clickedInsideMenu = !!mobileMenu && mobileMenu.contains(event.target);
     const clickedHamburger = !!hamburger && hamburger.contains(event.target);
+    const clickedInsideDropdown = !!dropdown && dropdown.contains(event.target);
+    const clickedAvatar = !!avatarBtn && avatarBtn.contains(event.target);
 
-    if (!clickedInsideMenu && !clickedHamburger) {
+    if (!clickedInsideMenu && !clickedHamburger && !clickedInsideDropdown && !clickedAvatar) {
       closeMobileMenu();
     }
   });
