@@ -1,30 +1,38 @@
 :root {
-  --market-bg: var(--bg, #f4f7fb);
-  --market-panel: var(--surface, #ffffff);
-  --market-panel-alt: var(--surface-strong, #f8fafc);
-  --market-border: var(--border, rgba(15, 23, 42, 0.08));
-  --market-text: var(--text, #101828);
-  --market-muted: var(--muted, #667085);
-  --market-primary: var(--brand, #2f6fed);
+  --market-bg: #f5f7fb;
+  --market-surface: #ffffff;
+  --market-surface-2: #f8fafc;
+  --market-surface-3: #eef4ff;
+  --market-panel: var(--market-surface);
+  --market-panel-alt: var(--market-surface-2);
+  --market-border: #e2e8f0;
+  --market-text: #0f172a;
+  --market-text-secondary: #334155;
+  --market-muted: #64748b;
+  --market-primary: #2f6fed;
   --market-primary-strong: #1e4fd8;
   --market-primary-soft: rgba(47, 111, 237, 0.09);
   --market-success: #138a62;
-  --market-danger: var(--danger, #d92d20);
+  --market-danger: #d92d20;
   --market-danger-soft: rgba(217, 45, 32, 0.08);
   --market-shadow: 0 16px 40px rgba(15, 23, 42, 0.08);
   --market-shadow-soft: 0 10px 24px rgba(15, 23, 42, 0.05);
 }
 
 html[data-theme="dark"] {
-  --market-bg: #0d172a;
-  --market-panel: #111b2e;
-  --market-panel-alt: #16253d;
-  --market-border: rgba(148, 163, 184, 0.14);
-  --market-text: #edf2ff;
-  --market-muted: #9aa8bd;
-  --market-primary: #7ab4ff;
-  --market-primary-strong: #9cc6ff;
-  --market-primary-soft: rgba(106, 153, 255, 0.12);
+  --market-bg: #0b1220;
+  --market-surface: #111827;
+  --market-surface-2: #172235;
+  --market-surface-3: #1e293b;
+  --market-panel: #111827;
+  --market-panel-alt: #172235;
+  --market-border: rgba(148, 163, 184, 0.18);
+  --market-text: #f8fafc;
+  --market-text-secondary: #cbd5e1;
+  --market-muted: #94a3b8;
+  --market-primary: #60a5fa;
+  --market-primary-strong: #7ab4ff;
+  --market-primary-soft: rgba(96, 165, 250, 0.12);
   --market-success: #39c48b;
   --market-danger: #ff8d7d;
   --market-danger-soft: rgba(255, 141, 125, 0.08);
@@ -35,6 +43,7 @@ html[data-theme="dark"] {
 .market-create-page {
   padding: 28px 0 48px;
   background: var(--market-bg);
+  color: var(--market-text);
 }
 
 .market-create-shell {
@@ -122,10 +131,11 @@ html[data-theme="dark"] {
   align-items: flex-end;
   gap: 8px;
   padding: 14px 18px;
-  background: rgba(255, 255, 255, 0.3);
+  background: var(--market-surface-2);
   border: 1px solid var(--market-border);
   border-radius: 18px;
   box-shadow: var(--market-shadow-soft);
+  color: var(--market-text);
 }
 
 .market-status-card strong {
@@ -158,10 +168,13 @@ html[data-theme="dark"] {
 
 .editor-section,
 .panel-card {
-  background: rgba(255, 255, 255, 0.52);
+  background: var(--market-surface);
+  color: var(--market-text);
   border: 1px solid var(--market-border);
   border-radius: 24px;
   box-shadow: var(--market-shadow-soft);
+  opacity: 1;
+  filter: none;
 }
 
 .editor-section {
@@ -254,7 +267,7 @@ html[data-theme="dark"] {
 .price-shell {
   position: relative;
   width: 100%;
-  background: var(--market-panel-alt);
+  background: var(--market-surface-2);
   border: 1px solid var(--market-border);
   border-radius: 16px;
   transition: border-color 0.2s ease, box-shadow 0.2s ease, background-color 0.2s ease, transform 0.2s ease;
@@ -264,9 +277,9 @@ html[data-theme="dark"] {
 .textarea-shell:focus-within,
 .file-input-shell:focus-within,
 .price-shell:focus-within {
-  border-color: rgba(47, 111, 237, 0.42);
-  background: rgba(255, 255, 255, 0.9);
-  box-shadow: 0 0 0 4px rgba(47, 111, 237, 0.08);
+  border-color: rgba(96, 165, 250, 0.7);
+  background: var(--market-surface-3);
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
 }
 
 .input-shell--error,
@@ -283,14 +296,15 @@ html[data-theme="dark"] {
   width: 100%;
   min-height: 56px;
   padding: 15px 16px;
-  border: none;
+  border: 1px solid var(--market-border);
   border-radius: 16px;
-  background: transparent;
+  background: var(--market-surface-2);
   color: var(--market-text);
   font: inherit;
   font-size: 0.97rem;
   line-height: 1.45;
   box-shadow: none;
+  opacity: 1;
 }
 
 .create-form textarea {
@@ -301,13 +315,15 @@ html[data-theme="dark"] {
 
 .create-form input::placeholder,
 .create-form textarea::placeholder {
-  color: var(--market-muted);
+  color: #64748b;
 }
 
 .create-form input:focus,
 .create-form select:focus,
 .create-form textarea:focus {
   outline: none;
+  border-color: #60a5fa;
+  box-shadow: 0 0 0 4px rgba(96, 165, 250, 0.12);
 }
 
 .create-form select {
@@ -355,7 +371,7 @@ html[data-theme="dark"] {
   align-items: center;
   gap: 10px;
   width: fit-content;
-  background: var(--market-panel-alt);
+  background: var(--market-surface-2);
   border: 1px solid var(--market-border);
   border-radius: 14px;
   padding: 12px 16px;
@@ -412,9 +428,9 @@ html[data-theme="dark"] {
   gap: 16px;
   min-height: 128px;
   padding: 18px 18px 18px 20px;
-  border: 1.5px dashed rgba(47, 111, 237, 0.3);
+  border: 1.5px dashed rgba(96, 165, 250, 0.4);
   border-radius: 20px;
-  background: linear-gradient(180deg, rgba(47, 111, 237, 0.03), rgba(47, 111, 237, 0.01));
+  background: linear-gradient(180deg, rgba(96, 165, 250, 0.06), rgba(15, 23, 42, 0.02));
   cursor: pointer;
   transition: border-color 0.2s ease, transform 0.2s ease, background-color 0.2s ease, box-shadow 0.2s ease;
 }
@@ -471,7 +487,7 @@ html[data-theme="dark"] {
   padding: 0 16px;
   border-radius: 12px;
   border: 1px solid var(--market-border);
-  background: var(--market-panel);
+  background: var(--market-surface-2);
   color: var(--market-text);
   font-size: 0.82rem;
   font-weight: 700;
