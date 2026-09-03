@@ -3,50 +3,163 @@
 <link rel="stylesheet" href="{% static 'css/market.css' %}">
 {% block title %}+ E'lon joylash{% endblock %}
 {% block content %}
-<section class="create-listing section-wrap">
-  <div class="section-heading">
-    <div>
-      <span class="eyebrow">Bozor</span>
-      <h2>Yangi e'lon joylash</h2>
+<section class="market-create-page section-wrap">
+  <div class="market-create-shell">
+    <header class="market-create-header">
+      <nav class="market-breadcrumbs" aria-label="Breadcrumb">
+        <a href="{% url 'home' %}">Bosh sahifa</a>
+        <span>/</span>
+        <a href="{% url 'market:listings' %}">Mahalla bozori</a>
+        <span>/</span>
+        <span>E'lon joylash</span>
+      </nav>
+
+      <div class="market-create-title-wrap">
+        <span class="eyebrow">Bozor</span>
+        <h1>E'lon joylash</h1>
+        <p>Mahsulot yoki xizmat haqidagi ma'lumotlarni kiriting</p>
+      </div>
+    </header>
+
+    <div class="market-create-layout">
+      <div class="market-create-main">
+        <form method="post" enctype="multipart/form-data" class="create-form">
+          {% csrf_token %}
+
+          <section class="form-card">
+            <div class="card-header">
+              <h2>Asosiy ma'lumotlar</h2>
+            </div>
+
+            <div class="field-grid">
+              <div class="form-row form-row--full">
+                <label for="id_title">Mahsulot nomi</label>
+                {{ form.title }}
+                {% if form.title.errors %}
+                  <div class="field-errors">{{ form.title.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-row">
+                <label for="id_category">Kategoriya</label>
+                {{ form.category }}
+                {% if form.category.errors %}
+                  <div class="field-errors">{{ form.category.errors }}</div>
+                {% endif %}
+              </div>
+
+              <div class="form-row">
+                <label for="id_condition">Holati</label>
+                {{ form.condition }}
+                {% if form.condition.errors %}
+                  <div class="field-errors">{{ form.condition.errors }}</div>
+                {% endif %}
+              </div>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="card-header">
+              <h2>Narx</h2>
+            </div>
+
+            <div class="field-grid">
+              <div class="form-row form-row--full">
+                <label for="id_price">Narxi</label>
+                <div class="price-field-wrap">
+                  {{ form.price }}
+                  <span class="currency-pill">UZS</span>
+                </div>
+                {% if form.price.errors %}
+                  <div class="field-errors">{{ form.price.errors }}</div>
+                {% endif %}
+
+                <label class="checkbox-row" for="id_negotiable">
+                  {{ form.negotiable }}
+                  <span>Kelishiladi</span>
+                </label>
+              </div>
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="card-header">
+              <h2>Tavsif</h2>
+            </div>
+
+            <div class="form-row form-row--full">
+              <label for="id_description">Mahsulot haqida batafsil</label>
+              {{ form.description }}
+              <div class="helper-text">Mahsulotning holati, xususiyatlari va boshqa muhim ma'lumotlarni yozing.</div>
+              {% if form.description.errors %}
+                <div class="field-errors">{{ form.description.errors }}</div>
+              {% endif %}
+            </div>
+          </section>
+
+          <section class="form-card">
+            <div class="card-header">
+              <h2>Rasmlar</h2>
+            </div>
+
+            <div class="form-row form-row--full">
+              <label>Mahsulot rasmlari</label>
+
+              <div class="upload-shell">
+                <div class="upload-zone">
+                  <div class="upload-icon" aria-hidden="true">⇪</div>
+                  <div class="upload-content">
+                    <strong>Rasm qo'shish</strong>
+                    <span>PNG, JPG yoki WEBP</span>
+                  </div>
+                </div>
+                {{ image_form.images }}
+              </div>
+
+              <div id="image-previews" class="image-previews" aria-live="polite"></div>
+              {% if image_form.images.errors %}
+                <div class="field-errors">{{ image_form.images.errors }}</div>
+              {% endif %}
+            </div>
+          </section>
+
+          <div class="submit-row">
+            <a href="{% url 'market:listings' %}" class="btn btn-secondary">Bekor qilish</a>
+            <button type="submit" class="btn btn-primary" id="submit-button">{% if editing %}Saqlash{% else %}E'lonni joylash{% endif %}</button>
+          </div>
+        </form>
+      </div>
+
+      <aside class="market-create-sidebar">
+        <div class="info-card">
+          <div class="info-card__header">
+            <span class="eyebrow accent">Yordam</span>
+            <h3>Yaxshi e'lon uchun tavsiyalar</h3>
+          </div>
+
+          <ul class="tips-list">
+            <li>Mahsulot nomini aniq va qisqacha yozing.</li>
+            <li>Rasmlar sifatli va kamida 3 ta bo'lsin.</li>
+            <li>Narxni real bozor ko'rsatkichlariga qarab belgilang.</li>
+            <li>Holat va tavsifni aniq ayting, muhim xususiyatlarni qoldirmang.</li>
+          </ul>
+        </div>
+
+        <div class="info-card info-card--soft">
+          <div class="info-card__header">
+            <span class="eyebrow accent">E'lon tayyorgarligi</span>
+            <h3>To'liqlik ko'rsatkichi</h3>
+          </div>
+
+          <div class="progress-meter" aria-label="E'lon to'liqlik darajasi">
+            <span style="width: 82%"></span>
+          </div>
+
+          <p>Nom, narx va tasvirlar to'liq bo'lsa, e'lon ko'proq e'tiborga ega bo'ladi.</p>
+        </div>
+      </aside>
     </div>
   </div>
-
-  <form method="post" enctype="multipart/form-data" class="create-form">
-    {% csrf_token %}
-      <div class="form-row">
-        <label for="id_title">1) Mahsulot nomi</label>
-        {{ form.title }}
-      </div>
-
-      <div class="form-row">
-        <label for="id_condition">2) Holatini tanlang</label>
-        {{ form.condition }}
-      </div>
-
-      <div class="form-row">
-        <label for="id_category">3) Kategoriya</label>
-        {{ form.category }}
-      </div>
-
-      <div class="form-row">
-        <label for="id_description">Tavsif</label>
-        {{ form.description }}
-      </div>
-
-      <div class="form-row">
-        <label for="id_price">Narxi</label>
-        {{ form.price }} <span class="currency">so'm</span>
-        <label class="inline"><input type="checkbox" name="negotiable"> Kelishiladi</label>
-      </div>
-
-      <div class="form-row">
-        <label>Mahsulot rasmlari (kamida 3 ta)</label>
-        {{ image_form.images }}
-        <div id="image-previews" class="image-previews"></div>
-      </div>
-
-      <button type="submit" class="btn btn-primary" id="submit-button">{% if editing %}Saqlash{% else %}E'lonni joylash{% endif %}</button>
-  </form>
 </section>
 <script src="{% static 'js/market.js' %}"></script>
 {% endblock %}
