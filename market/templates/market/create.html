@@ -1,10 +1,10 @@
 {% extends 'base.html' %}
 {% load static %}
 
-{% block title %}E'lon joylash{% endblock %}
+{% block title %}+ E'lon joylash{% endblock %}
 
 {% block extra_css %}
-  <link rel="stylesheet" href="{% static 'css/market.css' %}">
+<link rel="stylesheet" href="{% static 'css/market.css' %}">
 {% endblock %}
 
 {% block content %}
@@ -237,6 +237,8 @@
     </div>
   </div>
 </section>
+{% endblock %}
 
+{% block extra_js %}
 <script src="{% static 'js/market.js' %}"></script>
 {% endblock %}
