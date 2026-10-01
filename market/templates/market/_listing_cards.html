@@ -1,0 +1,55 @@
+{% load humanize %}
+<div class="market-card-grid">
+  {% for item in listings %}
+    <article class="market-product-card">
+      <a class="market-product-link" href="{% url 'market:listing_detail' item.pk %}" aria-label="{{ item.title }} e'lonini ochish">
+        <div class="market-product-media">
+          {% with card_image=item.images.all|first %}
+            {% if card_image and card_image.image %}
+              <img src="{{ card_image.image.url }}" alt="{{ item.title }}" loading="lazy" width="720" height="540">
+            {% else %}
+              <span class="market-image-placeholder" aria-hidden="true"><i class="fa-regular fa-image"></i></span>
+            {% endif %}
+          {% endwith %}
+          <span class="market-product-condition">{{ item.get_condition_display }}</span>
+          {% if show_status %}
+            {% if item.status == 'pending' %}
+              <span class="market-product-status is-pending"><i class="fa-regular fa-clock" aria-hidden="true"></i> Moderatsiya kutilmoqda</span>
+            {% elif item.status == 'approved' %}
+              <span class="market-product-status is-approved"><i class="fa-solid fa-check" aria-hidden="true"></i> Tasdiqlangan</span>
+            {% endif %}
+          {% endif %}
+        </div>
+        <div class="market-product-copy">
+          <span class="market-product-category">{{ item.get_category_display }}</span>
+          <h2>{{ item.title }}</h2>
+          <p class="market-product-price">{{ item.price|intcomma }} so'm</p>
+          {% if item.negotiable %}<span class="market-negotiable">Kelishiladi</span>{% endif %}
+          <div class="market-product-meta">
+            {% if item.neighborhood %}<span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ item.neighborhood }}</span>{% endif %}
+            {% if not item.neighborhood %}<span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>Hudud ko‘rsatilmagan</span>{% endif %}
+            <time datetime="{{ item.created_at|date:'c' }}">{{ item.created_at|date:'d.m.Y' }}</time>
+          </div>
+          <p class="market-product-seller">{{ item.seller.get_full_name|default:"E'lon egasi" }}</p>
+        </div>
+      </a>
+      <button class="market-favorite" type="button" aria-label="Sevimlilarga qo‘shish" aria-pressed="false" data-bookmark data-bookmark-key="listing-{{ item.pk }}">
+        <i class="fa-regular fa-heart" aria-hidden="true"></i>
+      </button>
+    </article>
+  {% empty %}
+    <div class="market-empty-state">
+      <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+      {% if has_active_filters %}
+        <h2>E'lon topilmadi</h2>
+        <p>Filtrlarni o‘zgartirib yoki “Hamma e'lonlar”ni tanlab qayta qidiring.</p>
+      {% elif has_pending_listings %}
+        <h2>Tasdiqlangan e'lonlar hozircha yo‘q</h2>
+        <p>Yangi e'lonlar moderatsiyadan o‘tgach “Hamma e'lonlar” bo‘limida ko‘rinadi.</p>
+      {% else %}
+        <h2>Hozircha e'lon yo‘q</h2>
+        <p>Tasdiqlangan e'lonlar joylanganda shu yerda ko‘rinadi.</p>
+      {% endif %}
+    </div>
+  {% endfor %}
+</div>

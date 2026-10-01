@@ -13,6 +13,16 @@ class ListingForm(forms.ModelForm):
         }
 
 
+class ListingReportForm(forms.Form):
+    reason = forms.ChoiceField(choices=[
+        ("spam", "Spam yoki takroriy e'lon"),
+        ("fraud", "Firibgarlik yoki noto'g'ri ma'lumot"),
+        ("prohibited", "Taqiqlangan mahsulot"),
+        ("other", "Boshqa sabab"),
+    ])
+    details = forms.CharField(required=False, max_length=2000, widget=forms.Textarea(attrs={"rows": 3}))
+
+
 class MultipleFileInput(forms.ClearableFileInput):
     allow_multiple_selected = True
 

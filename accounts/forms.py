@@ -116,3 +116,21 @@ class EmailLoginForm(forms.Form):
         label="Parol",
         widget=forms.PasswordInput(attrs={"placeholder": "Parol", "class": "form-input"}),
     )
+
+
+class MarketContactVisibilityForm(forms.ModelForm):
+    class Meta:
+        model = User
+        fields = ["market_phone_visible", "market_email_visible"]
+        labels = {
+            "market_phone_visible": "E'lonlarimda telefon raqamimni ko‘rsatish",
+            "market_email_visible": "E'lonlarimda email manzilimni ko‘rsatish",
+        }
+
+    def clean(self):
+        cleaned = super().clean()
+        if cleaned.get("market_phone_visible") and not self.instance.telefon:
+            self.add_error("market_phone_visible", "Telefon raqami profilingizda mavjud emas.")
+        if cleaned.get("market_email_visible") and not self.instance.email:
+            self.add_error("market_email_visible", "Email manzili profilingizda mavjud emas.")
+        return cleaned

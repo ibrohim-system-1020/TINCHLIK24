@@ -1,53 +1,108 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-<link rel="stylesheet" href="{% static 'css/market.css' %}">
 {% block title %}Mahalla bozori — E'lonlar{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/market.css' %}">{% endblock %}
 {% block content %}
-<section class="market-listings section-wrap">
-  <div class="section-heading">
-    <div>
-      <span class="eyebrow">E'lonlar</span>
-      <h2>Mahalla bozori</h2>
-      <p>Mahallangizdagi yangi va ishlatilgan mahsulotlarni toping</p>
-    </div>
-    <a href="{% url 'market:create_listing' %}" class="btn btn-primary">+ E'lon joylash</a>
-  </div>
-  <form method="get" class="market-search">
-    <input type="search" name="q" placeholder="Nima qidiryapsiz?" value="{{ query }}" aria-label="Search listings" />
-    <button class="btn">Qidirish</button>
-  </form>
+<main class="market-browser">
+  <div class="market-browser-shell">
+    <header class="market-browser-heading">
+      <div>
+        <span class="market-eyebrow"><i class="fa-solid fa-store" aria-hidden="true"></i> TINCHLIK24 BOZORI</span>
+        <h1>Mahallangizdan toping</h1>
+        <p>Mahalliy e'lonlarni qidiring, solishtiring va sotuvchi bilan bog‘laning.</p>
+      </div>
+      <div class="market-browser-actions">
+        <a href="{% url 'market:listings' %}" class="market-all-listings{% if not has_active_filters %} is-current{% endif %}"{% if not has_active_filters %} aria-current="page"{% endif %}><i class="fa-solid fa-table-cells-large" aria-hidden="true"></i> Hamma e'lonlar</a>
+        <a href="{% url 'market:create_listing' %}" class="market-action-button"><i class="fa-solid fa-plus" aria-hidden="true"></i> E'lon joylash</a>
+      </div>
+    </header>
 
-  <div class="listings-grid">
-    {% for item in listings %}
-    <article class="listing-card">
-      <a href="{% url 'market:listing_detail' item.pk %}">
-        {% if item.images.all|length > 0 %}
-          <img src="{{ item.images.all.0.image.url }}" alt="{{ item.title }}" />
-        {% endif %}
-        <div class="listing-body">
-          <h3>{{ item.title }}</h3>
-          <div class="meta">
-            <span class="price">{{ item.price|intcomma }} so'm{% if item.negotiable %} (Kelishiladi){% endif %}</span>
-            <span class="cond">{{ item.get_condition_display }}</span>
+    <form method="get" class="market-filter-form" role="search">
+      <div class="market-search-row">
+        <label class="market-search-field">
+          <i class="fa-solid fa-magnifying-glass" aria-hidden="true"></i>
+          <span class="sr-only">E'lon qidirish</span>
+          <input type="search" name="q" value="{{ query }}" placeholder="Nima qidiryapsiz?">
+        </label>
+        <button class="market-search-submit" type="submit">Qidirish</button>
+      </div>
+      <div class="market-filter-row">
+        <label class="market-filter-control">
+          <span>Kategoriya</span>
+          <select name="category">
+            <option value="">Barcha kategoriyalar</option>
+            {% for value, label in category_choices %}<option value="{{ value }}"{% if request.GET.category == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="market-filter-control">
+          <span>Holati</span>
+          <select name="condition">
+            <option value="">Barchasi</option>
+            {% for value, label in condition_choices %}<option value="{{ value }}"{% if request.GET.condition == value %} selected{% endif %}>{{ label }}</option>{% endfor %}
+          </select>
+        </label>
+        <label class="market-filter-control market-neighborhood-filter">
+          <span>Hudud</span>
+          <input type="search" name="neighborhood" value="{{ request.GET.neighborhood }}" placeholder="Mahalla yoki tuman">
+        </label>
+        <label class="market-filter-control market-price-filter">
+          <span>Min. narx</span>
+          <input type="number" name="min_price" min="0" value="{{ request.GET.min_price }}" placeholder="0">
+        </label>
+        <label class="market-filter-control market-price-filter">
+          <span>Max. narx</span>
+          <input type="number" name="max_price" min="0" value="{{ request.GET.max_price }}" placeholder="Cheklanmagan">
+        </label>
+        <label class="market-filter-control">
+          <span>Saralash</span>
+          <select name="sort">
+            <option value="newest"{% if request.GET.sort == 'newest' or not request.GET.sort %} selected{% endif %}>Eng yangilari</option>
+            <option value="price_asc"{% if request.GET.sort == 'price_asc' %} selected{% endif %}>Avval arzonlari</option>
+            <option value="price_desc"{% if request.GET.sort == 'price_desc' %} selected{% endif %}>Avval qimmatlari</option>
+          </select>
+        </label>
+        <button class="market-filter-submit" type="submit"><i class="fa-solid fa-sliders" aria-hidden="true"></i><span>Filtrlash</span></button>
+        {% if request.GET %}<a class="market-clear-filters" href="{% url 'market:listings' %}">Tozalash</a>{% endif %}
+      </div>
+    </form>
+
+    {% if new_listings %}
+      <section class="market-results market-new-results" aria-labelledby="market-new-results-title">
+        <div class="market-results-heading">
+          <div>
+            <h2 id="market-new-results-title">Yangi e'lonlar</h2>
+            <p>{{ new_listings|length }} ta so‘nggi e'lon</p>
           </div>
+          <span class="market-status-key"><i class="fa-regular fa-clock" aria-hidden="true"></i> Moderatsiya kutilmoqda</span>
         </div>
-      </a>
-    </article>
-    {% empty %}
-      <div class="empty-state">Hech qanday e'lon mavjud emas.</div>
-    {% endfor %}
-  </div>
+        {% include "market/_listing_cards.html" with listings=new_listings show_status=True %}
+      </section>
+    {% endif %}
 
-  <div class="pagination">
-    {% if listings.has_previous %}
-      <a href="?page={{ listings.previous_page_number }}" class="btn">Oldingi</a>
-    {% endif %}
-    <span class="page-info">Sahifa {{ listings.number }} / {{ listings.paginator.num_pages }}</span>
-    {% if listings.has_next %}
-      <a href="?page={{ listings.next_page_number }}" class="btn">Keyingi</a>
-    {% endif %}
+    <section class="market-results" aria-labelledby="market-results-title">
+      <div class="market-results-heading">
+        <div>
+          <h2 id="market-results-title">Hamma e'lonlar</h2>
+          <p>{{ listings.paginator.count }} ta e'lon</p>
+        </div>
+        <span class="market-page-count">{{ listings.number }} / {{ listings.paginator.num_pages }}</span>
+      </div>
+
+      {% include "market/_listing_cards.html" with listings=listings %}
+
+      {% if listings.paginator.num_pages > 1 %}
+        <nav class="market-pagination" aria-label="E'lonlar sahifalari">
+          {% if listings.has_previous %}<a href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ listings.previous_page_number }}" aria-label="Oldingi sahifa"><i class="fa-solid fa-arrow-left" aria-hidden="true"></i> Oldingi</a>{% endif %}
+          <span>{{ listings.number }} / {{ listings.paginator.num_pages }}</span>
+          {% if listings.has_next %}<a href="?{% if filter_query %}{{ filter_query }}&amp;{% endif %}page={{ listings.next_page_number }}" aria-label="Keyingi sahifa">Keyingi <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a>{% endif %}
+        </nav>
+      {% endif %}
+    </section>
   </div>
-</section>
-<script src="{% static 'js/market.js' %}"></script>
+</main>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/market.js' %}?v=5"></script>
 {% endblock %}

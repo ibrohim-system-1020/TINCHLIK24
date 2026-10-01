@@ -1,0 +1,30 @@
+{% load humanize %}
+<div class="home-market-preview-grid">
+  {% for listing in listings %}
+    {% if forloop.counter <= limit %}
+      <article class="home-market-preview-card">
+        <a href="{% url 'market:listing_detail' listing.pk %}" aria-label="{{ listing.title }} e'lonini ko‘rish">
+          <div class="home-market-preview-media">
+            {% with preview_image=listing.images.all|first %}
+              {% if preview_image and preview_image.image %}
+                <img src="{{ preview_image.image.url }}" alt="{{ listing.title }}" loading="lazy" width="720" height="540">
+              {% else %}
+                <span class="home-market-preview-placeholder" aria-hidden="true"><i class="fa-regular fa-image"></i></span>
+              {% endif %}
+            {% endwith %}
+          </div>
+          <div class="home-market-preview-copy">
+            <h3>{{ listing.title }}</h3>
+            <strong>{{ listing.price|intcomma }} so'm</strong>
+            <div class="home-market-preview-meta">
+              <span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{% if listing.neighborhood %}{{ listing.neighborhood }}{% else %}Hudud ko‘rsatilmagan{% endif %}</span>
+              <time datetime="{{ listing.created_at|date:'c' }}">{{ listing.created_at|date:'d.m.Y' }}</time>
+            </div>
+          </div>
+        </a>
+      </article>
+    {% endif %}
+  {% empty %}
+    <div class="home-market-preview-empty">Hozircha tasdiqlangan e'lonlar yo‘q.</div>
+  {% endfor %}
+</div>

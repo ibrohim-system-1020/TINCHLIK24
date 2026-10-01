@@ -1,579 +1,107 @@
 {% extends 'base.html' %}
 
+{% block title %}Shaxsiy kabinet | TINCHLIK24{% endblock %}
+
 {% block content %}
 <section class="profile-page">
   <div class="profile-shell">
     <main class="profile-content">
       <header class="profile-header">
         <div>
-          <p class="section-label">Foydalanuvchi</p>
-          <h1>{{ profile_user.first_name }} {{ profile_user.last_name }}</h1>
-          <p class="section-note">Sizning shaxsiy profilingiz va hisob ma'lumotlaringiz</p>
+          <p class="section-label">SHAXSIY KABINET</p>
+          <h1>{{ profile_user.get_full_name|default:profile_user.email }}</h1>
+          <p class="section-note">Akkauntingiz va platformadagi faolligingiz.</p>
         </div>
         <div class="profile-badge {% if profile_user.is_phone_verified %}badge-success{% else %}badge-warning{% endif %}">
-          {% if profile_user.is_phone_verified %}
-            ✓ Tasdiqlangan
-          {% else %}
-            ! Tasdiqlanmagan
-          {% endif %}
+          {% if profile_user.is_phone_verified %}<i class="fa-solid fa-circle-check" aria-hidden="true"></i> Telefon tasdiqlangan{% else %}<i class="fa-solid fa-circle-exclamation" aria-hidden="true"></i> Telefon tasdiqlanmagan{% endif %}
         </div>
       </header>
 
-      {% if is_admin %}
-      <section class="card admin-card">
+      <section class="profile-card market-contact-settings" aria-labelledby="market-contact-settings-title">
         <div class="card-title">
-          <div>
-            <p class="section-label">Admin boshqaruvi</p>
-            <h2>Administrator paneli</h2>
-          </div>
+          <div><p class="section-label">E'LONLAR MAXFIYLIGI</p><h2 id="market-contact-settings-title">Aloqa ma'lumotlari</h2></div>
         </div>
-        <div class="admin-actions">
-          <a href="/admin/" class="admin-action-link">Django admin paneli</a>
-          <a href="/admin/" class="admin-action-link secondary">Foydalanuvchilar va audit log</a>
+        <p class="contact-settings-note">Telefon va email faqat quyidagi rozilik yoqilganda e'lonlaringizda ko‘rinadi.</p>
+        <div class="contact-current-values">
+          <div><span>Telefon</span><strong>{{ profile_user.telefon|default:'Kiritilmagan' }}</strong></div>
+          <div><span>Email</span><strong>{{ profile_user.email|default:'Kiritilmagan' }}</strong></div>
         </div>
+        <form method="post" action="{% url 'accounts:profile' %}" class="contact-visibility-form">
+          {% csrf_token %}
+          <label class="contact-visibility-option" for="id_market_phone_visible">
+            {{ contact_visibility_form.market_phone_visible }}
+            <span><strong>Telefonimni e'lonlarda ko‘rsatish</strong><small>Ruxsat berilmasa telefon detail sahifaga yuborilmaydi.</small>
+              {% for error in contact_visibility_form.market_phone_visible.errors %}<em>{{ error }}</em>{% endfor %}
+            </span>
+          </label>
+          <label class="contact-visibility-option" for="id_market_email_visible">
+            {{ contact_visibility_form.market_email_visible }}
+            <span><strong>Emailimni e'lonlarda ko‘rsatish</strong><small>Ruxsat berilmasa email detail sahifaga yuborilmaydi.</small>
+              {% for error in contact_visibility_form.market_email_visible.errors %}<em>{{ error }}</em>{% endfor %}
+            </span>
+          </label>
+          <button class="profile-action contact-visibility-submit" type="submit"><i class="fa-solid fa-floppy-disk" aria-hidden="true"></i> Maxfiylikni saqlash</button>
+        </form>
+      </section>
+
+      {% if is_admin %}
+      <section class="admin-card">
+        <div class="card-title"><div><p class="section-label">ADMINISTRATOR</p><h2>Boshqaruv paneli</h2></div></div>
+        <div class="admin-actions"><a href="{% url 'adminpanel:dashboard' %}" class="admin-action-link">Ko‘rsatkichlar</a><a href="{% url 'adminpanel:users' %}" class="admin-action-link">Foydalanuvchilar</a></div>
       </section>
       {% endif %}
 
-      <section class="card profile-card">
-        <div class="card-top">
-          <div class="avatar-shell">
-            {% if profile_user.profile_photo_url %}
-              <img src="{{ profile_user.profile_photo_url }}" alt="Profil rasmi" class="avatar-img" />
-            {% else %}
-              <div class="avatar-fallback">{{ profile_user.first_name|default:'?'|slice:':1' }}{{ profile_user.last_name|default:'?'|slice:':1' }}</div>
-            {% endif %}
-          </div>
-          <div>
-            <p class="meta-label">Profil ma'lumotlari</p>
-            <h2>{{ profile_user.full_name|default:profile_user.email }}</h2>
-            <p class="meta-note">{{ profile_user.email }}</p>
-          </div>
-        </div>
+      <div class="profile-tabs" role="tablist" aria-label="Kabinet bo‘limlari">
+        <button type="button" role="tab" id="account-tab" aria-controls="account-panel" aria-selected="true" tabindex="0" data-profile-tab>Profil</button>
+        <button type="button" role="tab" id="history-tab" aria-controls="history-panel" aria-selected="false" tabindex="-1" data-profile-tab>Kirish tarixi</button>
+        <button type="button" role="tab" id="listings-tab" aria-controls="listings-panel" aria-selected="false" tabindex="-1" data-profile-tab>E’lonlarim</button>
+        <button type="button" role="tab" id="security-tab" aria-controls="security-panel" aria-selected="false" tabindex="-1" data-profile-tab>Xavfsizlik</button>
+      </div>
 
-        <div class="detail-list">
-          <div class="detail-item"><span>Ism:</span> <strong>{{ profile_user.first_name|default:'-' }}</strong></div>
-          <div class="detail-item"><span>Familiya:</span> <strong>{{ profile_user.last_name|default:'-' }}</strong></div>
-          <div class="detail-item"><span>Email:</span> <strong>{{ profile_user.email }}</strong></div>
-          <div class="detail-item"><span>Telefon:</span> <strong>{{ profile_user.telefon|default:'-' }}</strong></div>
-          <div class="detail-item"><span>Account ID:</span> <strong>{{ profile_user.id }}</strong></div>
-          <div class="detail-item"><span>Telegram username:</span> <strong>{{ profile_user.telegram_username|default:'-' }}</strong></div>
-          <div class="detail-item"><span>Telegram ID:</span> <strong>{{ profile_user.telegram_id|default:'-' }}</strong></div>
-          <div class="detail-item"><span>Ro'yxatdan o'tgan sana:</span> <strong>{{ profile_user.date_joined|date:'Y-m-d H:i' }}</strong></div>
-          <div class="detail-item"><span>Oxirgi login:</span> <strong>{{ profile_user.last_login|default:'—'|date:'Y-m-d H:i' }}</strong></div>
-        </div>
-      </section>
-
-      <section class="card history-card" id="history">
-        <div class="card-title">
-          <div>
-            <p class="section-label">Kirishlar tarixi</p>
-            <h2>Oxirgi 10 ta kirish</h2>
+      <div class="profile-dashboard">
+        <section class="profile-card profile-tab-panel" id="account-panel" role="tabpanel" aria-labelledby="account-tab" tabindex="-1">
+          <div class="card-top">
+            <div class="avatar-shell">
+              {% if profile_user.profile_photo_url %}<img src="{{ profile_user.profile_photo_url }}" alt="{{ profile_user.get_full_name|default:profile_user.email }}" class="avatar-img" />{% else %}<div class="avatar-fallback">{{ profile_user.first_name|default:profile_user.email|slice:':1'|upper }}{{ profile_user.last_name|default:''|slice:':1'|upper }}</div>{% endif %}
+            </div>
+            <div><p class="meta-label">TINCHLIK24 foydalanuvchisi</p><h2>{{ profile_user.get_full_name|default:profile_user.email }}</h2><p class="meta-note">{{ profile_user.email }}</p></div>
           </div>
-        </div>
+          <div class="detail-list">
+            <div class="detail-item"><span>Ism</span><strong>{{ profile_user.first_name|default:'Kiritilmagan' }}</strong></div>
+            <div class="detail-item"><span>Familiya</span><strong>{{ profile_user.last_name|default:'Kiritilmagan' }}</strong></div>
+            <div class="detail-item"><span>Telefon</span><strong>{{ profile_user.telefon|default:'Kiritilmagan' }}</strong></div>
+            <div class="detail-item"><span>Email holati</span><strong>{% if profile_user.email_verified %}Tasdiqlangan{% else %}Tasdiqlanmagan{% endif %}</strong></div>
+            <div class="detail-item"><span>Ro‘yxatdan o‘tgan</span><strong>{{ profile_user.date_joined|date:'d.m.Y' }}</strong></div>
+          </div>
+          <a href="{% url 'accounts:security' %}" class="profile-action"><i class="fa-solid fa-shield-halved" aria-hidden="true"></i> Xavfsizlik sozlamalari</a>
+        </section>
 
-        <div class="history-table-wrap">
-          {% if history %}
-          <table class="history-table">
-            <thead>
-              <tr>
-                <th>Vaqt</th>
-                <th>IP address</th>
-              </tr>
-            </thead>
-            <tbody>
-              {% for item in history %}
-              <tr>
-                <td>{{ item.logged_in_at|date:'Y-m-d H:i' }}</td>
-                <td>{{ item.ip_address|default:'–' }}</td>
-              </tr>
-              {% endfor %}
-            </tbody>
-          </table>
-          {% else %}
-          <div class="empty-state">Hozircha kirishlar mavjud emas.</div>
-          {% endif %}
-        </div>
-      </section>
+        <section class="history-card profile-tab-panel" id="history-panel" role="tabpanel" aria-labelledby="history-tab" tabindex="-1" hidden>
+          <div class="card-title"><div><p class="section-label">HISOB FAOLLIGI</p><h2>Oxirgi kirishlar</h2></div></div>
+          <div class="history-table-wrap">
+            {% if history %}
+            <table class="history-table"><thead><tr><th>Vaqt</th><th>IP manzil</th></tr></thead><tbody>{% for item in history %}<tr><td>{{ item.logged_in_at|date:'d.m.Y H:i' }}</td><td>{{ item.ip_address|default:'Ko‘rsatilmagan' }}</td></tr>{% endfor %}</tbody></table>
+            {% else %}<p class="empty-state">Hozircha kirish tarixi mavjud emas.</p>{% endif %}
+          </div>
+        </section>
+
+        <section class="history-card profile-tab-panel" id="listings-panel" role="tabpanel" aria-labelledby="listings-tab" tabindex="-1" hidden>
+          <div class="card-title"><div><p class="section-label">MAHALLA BOZORI</p><h2>Mening e’lonlarim</h2></div></div>
+          <div class="profile-listings">
+            {% for listing in profile_user.listings.all %}
+              <a class="profile-listing" href="{% url 'market:listing_detail' listing.pk %}"><strong>{{ listing.title }}</strong><small>{{ listing.get_status_display }} · {{ listing.created_at|date:'d.m.Y' }}</small></a>
+            {% empty %}<p class="empty-state">Siz hali e’lon joylamagansiz.</p>{% endfor %}
+          </div>
+          <a href="{% url 'market:create_listing' %}" class="profile-action"><i class="fa-solid fa-plus" aria-hidden="true"></i> E’lon joylash</a>
+        </section>
+
+        <section class="history-card profile-tab-panel" id="security-panel" role="tabpanel" aria-labelledby="security-tab" tabindex="-1" hidden>
+          <div class="card-title"><div><p class="section-label">AKKAUNT HIMOYASI</p><h2>Xavfsizlik</h2></div></div>
+          <p class="empty-state">Hisob ma’lumotlari va xavfsizlik amallarini boshqarish.</p>
+          <a href="{% url 'accounts:security' %}" class="profile-action"><i class="fa-solid fa-arrow-right" aria-hidden="true"></i> Xavfsizlik sahifasiga o‘tish</a>
+        </section>
+      </div>
     </main>
   </div>
 </section>
-
-<style>
-  .profile-page {
-    padding: 32px 20px 56px;
-    min-height: calc(100vh - 80px);
-    background: var(--bg);
-  }
-
-  .profile-shell {
-    width: min(100%, 1180px);
-    margin: 0 auto;
-  }
-
-  .profile-content {
-    display: flex;
-    flex-direction: column;
-    gap: 24px;
-  }
-
-  .profile-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 24px;
-    padding: 28px 30px;
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    background: rgba(255,255,255,0.8);
-    box-shadow: var(--shadow-soft);
-  }
-
-  .section-label {
-    color: var(--muted);
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.16em;
-    margin-bottom: 8px;
-  }
-
-  .profile-header h1 {
-    margin: 0;
-    font-size: clamp(2rem, 3vw, 3rem);
-    letter-spacing: -0.05em;
-  }
-
-  .section-note {
-    color: var(--muted);
-    margin-top: 10px;
-    line-height: 1.7;
-  }
-
-  .profile-badge {
-    padding: 12px 18px;
-    border-radius: 999px;
-    font-weight: 700;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    white-space: nowrap;
-  }
-
-  .badge-success {
-    background: rgba(34, 197, 94, 0.12);
-    color: #166534;
-    border: 1px solid rgba(34, 197, 94, 0.2);
-  }
-
-  .badge-warning {
-    background: rgba(245, 158, 11, 0.12);
-    color: #854d0e;
-    border: 1px solid rgba(245, 158, 11, 0.2);
-  }
-
-  .card {
-    background: rgba(255,255,255,0.82);
-    border: 1px solid var(--border);
-    border-radius: 28px;
-    padding: 26px 24px;
-    box-shadow: var(--shadow-soft);
-    transition: transform 0.2s ease, box-shadow 0.2s ease, border-color 0.2s ease;
-  }
-
-  .card:hover,
-  .card:focus-within {
-    transform: translateY(-2px);
-    box-shadow: var(--shadow);
-  }
-
-  .card-title {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-bottom: 18px;
-  }
-
-  .card-title h2 {
-    margin: 0;
-    font-size: clamp(1.3rem, 2vw, 1.8rem);
-    letter-spacing: -0.04em;
-  }
-
-  .card-top {
-    display: flex;
-    align-items: center;
-    gap: 18px;
-    margin-bottom: 20px;
-  }
-
-  .avatar-shell {
-    width: 90px;
-    height: 90px;
-    border-radius: 24px;
-    overflow: hidden;
-    background: linear-gradient(135deg, var(--primary), #8ec5ff);
-    display: grid;
-    place-items: center;
-  }
-
-  .avatar-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .avatar-fallback {
-    color: #ffffff;
-    font-size: 30px;
-    font-weight: 700;
-  }
-
-  .meta-label {
-    color: var(--muted);
-    margin-bottom: 8px;
-    font-size: 0.76rem;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-  }
-
-  .meta-note {
-    color: var(--muted);
-    margin-top: 6px;
-  }
-
-  .detail-list {
-    display: grid;
-    gap: 12px;
-  }
-
-  .detail-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 18px;
-    padding: 16px 18px;
-    background: rgba(246,248,252,0.8);
-    border: 1px solid var(--border);
-    border-radius: 16px;
-    color: var(--text);
-    overflow-wrap: anywhere;
-  }
-
-  .detail-item span {
-    color: var(--muted);
-    font-weight: 600;
-  }
-
-  .detail-item strong {
-    font-size: 0.96rem;
-    text-align: right;
-  }
-
-  .admin-card {
-    border-color: rgba(47,111,237,0.18);
-    background: linear-gradient(180deg, rgba(47,111,237,0.04), rgba(255,255,255,0.84));
-  }
-
-  .admin-actions {
-    display: grid;
-    gap: 12px;
-  }
-
-  .admin-action-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 48px;
-    padding: 0 16px;
-    border-radius: 14px;
-    text-decoration: none;
-    font-weight: 700;
-    background: var(--primary);
-    color: white;
-  }
-
-  .admin-action-link.secondary {
-    background: rgba(255,255,255,0.7);
-    color: var(--text);
-    border: 1px solid var(--border);
-  }
-
-  .history-table-wrap {
-    overflow-x: auto;
-  }
-
-  .history-table {
-    width: 100%;
-    border-collapse: collapse;
-    background: rgba(246,248,252,0.8);
-    border-radius: 16px;
-    overflow: hidden;
-  }
-
-  .history-table th,
-  .history-table td {
-    padding: 14px 16px;
-    text-align: left;
-    border-bottom: 1px solid var(--border);
-  }
-
-  .history-table th {
-    color: var(--muted);
-    font-size: 0.78rem;
-    letter-spacing: 0.1em;
-    text-transform: uppercase;
-  }
-
-  .history-table td {
-    color: var(--text);
-  }
-
-  .empty-state {
-    color: var(--muted);
-    padding: 8px 0 0;
-  }
-
-  @media (max-width: 640px) {
-    .profile-header {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .detail-item {
-      flex-direction: column;
-      align-items: flex-start;
-      gap: 8px;
-    }
-
-    .detail-item strong {
-      text-align: left;
-    }
-  }
-</style>
-{% endblock %}
-
-  .admin-action-link {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    padding: 14px 16px;
-    border-radius: 14px;
-    background: var(--button-bg);
-    color: var(--button-text);
-    text-decoration: none;
-    font-weight: 700;
-    transition: transform 0.2s ease, opacity 0.2s ease;
-  }
-
-  .admin-action-link.secondary {
-    background: rgba(96, 165, 250, 0.12);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-  }
-
-  .admin-action-link:hover,
-  .admin-action-link:focus-visible {
-    transform: translateY(-1px);
-    opacity: 0.96;
-  }
-
-  .history-card {
-    overflow: hidden;
-  }
-
-  .card-title {
-    display: flex;
-    justify-content: space-between;
-    align-items: flex-start;
-    margin-bottom: 18px;
-  }
-
-  .history-table-wrap {
-    overflow-x: auto;
-  }
-
-  .history-table {
-    width: 100%;
-    border-collapse: collapse;
-    min-width: 520px;
-  }
-
-  .history-table th,
-  .history-table td {
-    text-align: left;
-    padding: 16px 18px;
-  }
-
-  .history-table th {
-    font-size: 13px;
-    text-transform: uppercase;
-    letter-spacing: 0.14em;
-    color: var(--text-secondary);
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .history-table tr {
-    border-bottom: 1px solid var(--border-color);
-  }
-
-  .history-table tr:last-child {
-    border-bottom: none;
-  }
-
-  .history-table td {
-    color: var(--text-primary);
-  }
-
-  .empty-state {
-    padding: 24px;
-    border-radius: 20px;
-    background: var(--surface-strong);
-    color: var(--text-secondary);
-    border: 1px solid var(--border-color);
-  }
-
-  html[data-theme="dark"] .profile-page {
-    background: var(--bg);
-  }
-
-  html[data-theme="dark"] .profile-shell,
-  html[data-theme="dark"] .profile-content,
-  html[data-theme="dark"] .profile-header {
-    background: transparent;
-  }
-
-  html[data-theme="dark"] .card,
-  html[data-theme="dark"] .detail-item,
-  html[data-theme="dark"] .empty-state,
-  html[data-theme="dark"] .history-table-wrap {
-    background: var(--panel-bg);
-    border-color: var(--border-color);
-  }
-
-  html[data-theme="dark"] .badge-success {
-    background: rgba(34, 197, 94, 0.18);
-    color: #d1fae5;
-  }
-
-  html[data-theme="dark"] .badge-warning {
-    background: rgba(250, 204, 21, 0.18);
-    color: #fef3c7;
-  }
-
-  html[data-theme="dark"] .avatar-shell {
-    background: linear-gradient(135deg, rgba(96, 165, 250, 0.25), rgba(56, 189, 248, 0.12));
-  }
-
-  html[data-theme="dark"] .avatar-fallback {
-    color: #f8fafc;
-  }
-
-  html[data-theme="dark"] .detail-item:hover {
-    background: rgba(96, 165, 250, 0.10);
-  }
-
-  html[data-theme="dark"] .history-table th,
-  html[data-theme="dark"] .history-table td,
-  html[data-theme="dark"] .history-table tr {
-    border-color: var(--border-color);
-  }
-
-  html[data-theme="dark"] .profile-page {
-    background: var(--bg);
-  }
-
-  html[data-theme="dark"] .brand-header,
-  html[data-theme="dark"] .nav-item,
-  html[data-theme="dark"] .card,
-  html[data-theme="dark"] .detail-item,
-  html[data-theme="dark"] .empty-state {
-    border-color: var(--border-color);
-  }
-
-  html[data-theme="dark"] .brand-header,
-  html[data-theme="dark"] .nav-item,
-  html[data-theme="dark"] .card,
-  html[data-theme="dark"] .detail-item,
-  html[data-theme="dark"] .empty-state,
-  html[data-theme="dark"] .history-table th,
-  html[data-theme="dark"] .history-table td {
-    background: var(--card-bg);
-    color: var(--text-primary);
-  }
-
-  html[data-theme="dark"] .section-label,
-  html[data-theme="dark"] .section-note,
-  html[data-theme="dark"] .brand-subtitle,
-  html[data-theme="dark"] .meta-label,
-  html[data-theme="dark"] .meta-note,
-  html[data-theme="dark"] .detail-item span,
-  html[data-theme="dark"] .history-table th,
-  html[data-theme="dark"] .empty-state {
-    color: var(--text-secondary);
-  }
-
-  html[data-theme="dark"] .profile-badge {
-    border: 1px solid var(--border-color);
-  }
-
-  html[data-theme="dark"] .badge-success {
-    background: rgba(34, 197, 94, 0.14);
-    color: #bbf7d0;
-  }
-
-  html[data-theme="dark"] .badge-warning {
-    background: rgba(245, 158, 11, 0.14);
-    color: #fcd34d;
-  }
-
-  html[data-theme="dark"] .detail-item:hover,
-  html[data-theme="dark"] .nav-item:hover,
-  html[data-theme="dark"] .nav-item:focus-visible,
-  html[data-theme="dark"] .nav-item.active,
-  html[data-theme="dark"] .card:hover,
-  html[data-theme="dark"] .card:focus-within {
-    background: rgba(96, 165, 250, 0.08);
-    box-shadow: 0 18px 42px rgba(2, 6, 23, 0.32);
-  }
-
-  html[data-theme="dark"] .admin-action-link.secondary {
-    background: rgba(96, 165, 250, 0.1);
-    color: var(--text-primary);
-    border: 1px solid var(--border-color);
-  }
-
-  html[data-theme="dark"] .history-table tr {
-    border-color: var(--border-color);
-  }
-
-  @media (max-width: 980px) {
-    .profile-shell {
-      grid-template-columns: 1fr;
-    }
-  }
-
-  @media (max-width: 640px) {
-    .profile-page {
-      padding: 18px 14px;
-    }
-
-    .profile-header {
-      flex-direction: column;
-      align-items: stretch;
-    }
-
-    .card {
-      padding: 22px;
-    }
-
-    .detail-item {
-      flex-direction: column;
-      align-items: flex-start;
-    }
-
-    .card-top {
-      align-items: flex-start;
-    }
-  }
-</style>
 {% endblock %}

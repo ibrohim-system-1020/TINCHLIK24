@@ -14,10 +14,10 @@ class Listing(models.Model):
     STATUS_SOLD = 'sold'
     STATUS_REJECTED = 'rejected'
     STATUS_CHOICES = [
-        (STATUS_PENDING, 'Tekshirilmoqda'),
-        (STATUS_APPROVED, 'Tasdiqlandi'),
+        (STATUS_PENDING, 'Moderatsiya kutilmoqda'),
+        (STATUS_APPROVED, 'Tasdiqlangan'),
         (STATUS_SOLD, 'Sotilgan'),
-        (STATUS_REJECTED, 'Rad etildi'),
+        (STATUS_REJECTED, 'Rad etilgan'),
     ]
 
     CATEGORY_CHOICES = [

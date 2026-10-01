@@ -1,45 +1,167 @@
 {% extends 'base.html' %}
 {% load static %}
 {% load humanize %}
-<link rel="stylesheet" href="{% static 'css/market.css' %}">
 {% block title %}{{ listing.title }} — E'lon{% endblock %}
+{% block extra_css %}<link rel="stylesheet" href="{% static 'css/market.css' %}">{% endblock %}
 {% block content %}
-<section class="listing-detail section-wrap">
-  <div class="detail-grid">
-    <div class="gallery">
-      {% if images %}
-        <div class="main-image-wrap">
-          <img src="{{ images.0.image.url }}" alt="{{ listing.title }}" class="main-img" id="main-image" />
-        </div>
-        <div class="thumbs">
-          {% for img in images %}
-            <button class="thumb" data-src="{{ img.image.url }}" aria-label="Thumbnail {{ forloop.counter }}">
-              <img src="{{ img.image.url }}" alt="{{ listing.title }} thumbnail {{ forloop.counter }}" />
-            </button>
-          {% endfor %}
-        </div>
-      {% endif %}
-    </div>
-    <div class="detail-info">
-      <h1>{{ listing.title }}</h1>
-      <p class="price">{{ listing.price|intcomma }} so'm {% if listing.negotiable %}(Kelishiladi){% endif %}</p>
-      <p class="cond">{{ listing.get_condition_display }}</p>
-      <p class="desc">{{ listing.description }}</p>
-      <div class="seller-card">
-        <h3>Sotuvchi</h3>
-        <div class="seller-meta">
-          <div class="seller-avatar">{% if listing.seller.avatar %}<img src="{{ listing.seller.avatar.url }}" alt="{{ listing.seller.get_full_name }}" />{% endif %}</div>
-          <div>
-            <p class="seller-name">{{ listing.seller.full_name|default:listing.seller.email }}</p>
-            {% if listing.seller.neighborhood %}<p class="seller-location">{{ listing.seller.neighborhood }}</p>{% endif %}
-            <div class="seller-actions">
-              <a href="{% url 'chat:chat' %}" class="btn btn-primary">Yozish</a>
+<main class="market-detail-page">
+  <div class="market-detail-shell">
+    <nav class="market-detail-breadcrumbs" aria-label="Sahifa yo‘li">
+      <a href="{% url 'home' %}">Bosh sahifa</a><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      <a href="{% url 'market:listings' %}">E'lonlar</a><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      <a href="{% url 'market:listings' %}?category={{ listing.category|urlencode }}">{{ listing.get_category_display }}</a><i class="fa-solid fa-chevron-right" aria-hidden="true"></i>
+      <span>{{ listing.title }}</span>
+    </nav>
+
+    <div class="market-detail-layout">
+      <div class="market-detail-main">
+        <section class="market-gallery" aria-label="E'lon rasmlari">
+          {% if images %}
+            <div class="market-gallery-stage">
+              <button class="market-gallery-image-button" type="button" data-gallery-open aria-label="Rasmni to‘liq ko‘rish">
+                <img src="{{ images.0.image.url }}" alt="{{ listing.title }}" data-gallery-main width="1200" height="900" fetchpriority="high">
+              </button>
+              {% if images|length > 1 %}
+                <button class="market-gallery-arrow market-gallery-prev" type="button" data-gallery-prev aria-label="Oldingi rasm"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>
+                <button class="market-gallery-arrow market-gallery-next" type="button" data-gallery-next aria-label="Keyingi rasm"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>
+                <span class="market-gallery-count"><span data-gallery-current>1</span> / {{ images|length }}</span>
+              {% endif %}
+            </div>
+            {% if images|length > 1 %}
+              <div class="market-gallery-thumbnails" aria-label="Boshqa rasmlar">
+                {% for image in images %}
+                  <button class="market-gallery-thumb{% if forloop.first %} is-active{% endif %}" type="button" data-gallery-thumb data-src="{{ image.image.url }}" data-index="{{ forloop.counter0 }}" aria-label="{{ forloop.counter }}-rasm" aria-pressed="{% if forloop.first %}true{% else %}false{% endif %}">
+                    <img src="{{ image.image.url }}" alt="" loading="lazy" width="160" height="120">
+                  </button>
+                {% endfor %}
+              </div>
+            {% endif %}
+          {% else %}
+            <div class="market-detail-placeholder"><i class="fa-regular fa-image" aria-hidden="true"></i><span>Bu e'lon uchun rasm yuklanmagan</span></div>
+          {% endif %}
+        </section>
+
+        <section class="market-detail-card market-description-card">
+          <div class="market-detail-title-row">
+            <div>
+              <span class="market-detail-category">{{ listing.get_category_display }} <span aria-hidden="true">·</span> {{ listing.get_condition_display }}</span>
+              <h1>{{ listing.title }}</h1>
+            </div>
+            <div class="market-detail-actions">
+              <button class="market-icon-action market-favorite" type="button" aria-label="Sevimlilarga qo‘shish" aria-pressed="false" data-bookmark data-bookmark-icon="heart" data-bookmark-key="listing-{{ listing.pk }}"><i class="fa-regular fa-heart" aria-hidden="true"></i></button>
+              <button class="market-icon-action" type="button" data-share-current aria-label="E'lon havolasini ulashish"><i class="fa-solid fa-arrow-up-from-bracket" aria-hidden="true"></i></button>
+              <span class="sr-only" data-share-status aria-live="polite"></span>
             </div>
           </div>
-        </div>
+          <p class="market-detail-price">{{ listing.price|intcomma }} <span>so'm</span>{% if listing.negotiable %}<span class="market-negotiable">Kelishiladi</span>{% endif %}</p>
+          <div class="market-detail-meta">
+            {% if listing.neighborhood %}<span><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{{ listing.neighborhood }}</span>{% endif %}
+            <time datetime="{{ listing.created_at|date:'c' }}"><i class="fa-regular fa-clock" aria-hidden="true"></i>{{ listing.created_at|date:'d.m.Y H:i' }}</time>
+            <span><i class="fa-regular fa-eye" aria-hidden="true"></i>E'lon #{{ listing.pk }}</span>
+          </div>
+          <div class="market-detail-divider"></div>
+          <h2>Tavsif</h2>
+          <div class="market-description-text">{{ listing.description|linebreaksbr }}</div>
+          <div class="market-attribute-list">
+            <div><span>Kategoriya</span><strong>{{ listing.get_category_display }}</strong></div>
+            <div><span>Holati</span><strong>{{ listing.get_condition_display }}</strong></div>
+            {% if listing.neighborhood %}<div><span>Hudud</span><strong>{{ listing.neighborhood }}</strong></div>{% endif %}
+            <div><span>Narx</span><strong>{% if listing.negotiable %}Kelishiladi{% else %}Qat'iy{% endif %}</strong></div>
+          </div>
+        </section>
+
+        {% if seller_listings %}
+          <section class="market-related-section">
+            <div class="market-related-heading"><div><span class="market-eyebrow">SOTUVCHIDAN</span><h2>Shu sotuvchining boshqa e'lonlari</h2></div></div>
+            {% include "market/_listing_cards.html" with listings=seller_listings %}
+          </section>
+        {% endif %}
+
+        {% if similar_listings %}
+          <section class="market-related-section">
+            <div class="market-related-heading"><div><span class="market-eyebrow">SIZ UCHUN</span><h2>O‘xshash e'lonlar</h2></div><a href="{% url 'market:listings' %}?category={{ listing.category|urlencode }}">Barchasini ko‘rish <i class="fa-solid fa-arrow-right" aria-hidden="true"></i></a></div>
+            {% include "market/_listing_cards.html" with listings=similar_listings %}
+          </section>
+        {% endif %}
       </div>
+
+      <aside class="market-detail-sidebar">
+        <section class="market-seller-panel">
+          <p class="market-seller-price">{{ listing.price|intcomma }} <span>so'm</span></p>
+          {% if listing.negotiable %}<span class="market-seller-negotiable">Narx kelishiladi</span>{% endif %}
+          <div class="market-seller-identity">
+            {% if seller_contact.avatar_url %}
+              <img class="market-seller-avatar" src="{{ seller_contact.avatar_url }}" alt="{{ seller_contact.name }}" width="56" height="56">
+            {% else %}
+              <span class="market-seller-avatar market-seller-avatar-fallback" aria-hidden="true">{{ seller_contact.name|slice:":1"|upper }}</span>
+            {% endif %}
+            <div><span class="market-seller-label">Sotuvchi</span><h2>{{ seller_contact.name }}</h2><span class="market-seller-since">{{ seller_contact.joined_at|date:'Y' }}-yildan beri</span></div>
+          </div>
+          <button class="market-contact-button" type="button" data-contact-open><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Xabar yozish</button>
+          <p class="market-seller-location"><i class="fa-solid fa-location-dot" aria-hidden="true"></i>{% if listing.neighborhood %}{{ listing.neighborhood }}{% else %}Hudud ko‘rsatilmagan{% endif %}</p>
+        </section>
+
+        <section class="market-safety-panel">
+          <i class="fa-solid fa-shield-halved" aria-hidden="true"></i>
+          <div><h2>Xavfsiz savdo</h2><p>Mahsulotni ko‘rish va to‘lov shartlarini sotuvchi bilan oldindan kelishib oling.</p></div>
+        </section>
+
+        <details class="market-report-panel">
+          <summary><i class="fa-regular fa-flag" aria-hidden="true"></i> E'lon haqida shikoyat</summary>
+          {% if user.is_authenticated and user.pk != listing.seller_id %}
+            <form method="post" action="{% url 'market:report_listing' listing.pk %}" class="market-report-form">
+              {% csrf_token %}
+              <label for="report-reason">Sabab</label>
+              <select id="report-reason" name="reason" required>
+                <option value="">Sababni tanlang</option>
+                <option value="spam">Spam yoki takroriy e'lon</option>
+                <option value="fraud">Firibgarlik yoki noto'g'ri ma'lumot</option>
+                <option value="prohibited">Taqiqlangan mahsulot</option>
+                <option value="other">Boshqa sabab</option>
+              </select>
+              <label for="report-details">Qo‘shimcha ma'lumot</label>
+              <textarea id="report-details" name="details" maxlength="2000" rows="3"></textarea>
+              <button type="submit">Shikoyatni yuborish</button>
+            </form>
+          {% elif user.is_authenticated %}
+            <p>O‘zingiz joylagan e'lon haqida shikoyat yubora olmaysiz.</p>
+          {% else %}
+            <p><a href="{% url 'accounts:register' %}?tab=login">Shikoyat yuborish uchun tizimga kiring.</a></p>
+          {% endif %}
+        </details>
+      </aside>
     </div>
   </div>
-</section>
-<script src="{% static 'js/market.js' %}"></script>
+
+  {% if images %}
+    <dialog class="market-lightbox" data-market-lightbox aria-label="E'lon rasmini ko‘rish">
+      <button class="market-lightbox-close" type="button" data-gallery-close aria-label="Yopish"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+      {% if images|length > 1 %}<button class="market-lightbox-arrow market-lightbox-prev" type="button" data-gallery-prev aria-label="Oldingi rasm"><i class="fa-solid fa-chevron-left" aria-hidden="true"></i></button>{% endif %}
+      <img src="{{ images.0.image.url }}" alt="{{ listing.title }}" data-lightbox-image>
+      {% if images|length > 1 %}<button class="market-lightbox-arrow market-lightbox-next" type="button" data-gallery-next aria-label="Keyingi rasm"><i class="fa-solid fa-chevron-right" aria-hidden="true"></i></button>{% endif %}
+    </dialog>
+  {% endif %}
+
+  <dialog class="market-contact-dialog" data-contact-dialog aria-labelledby="market-contact-title">
+    <button class="market-contact-close" type="button" data-contact-close aria-label="Yopish"><i class="fa-solid fa-xmark" aria-hidden="true"></i></button>
+    <p class="market-eyebrow"><i class="fa-regular fa-comments" aria-hidden="true"></i> SOTUVCHI BILAN ALOQA</p>
+    <h2 id="market-contact-title">{{ seller_contact.name }}</h2>
+    <p class="market-contact-intro">E'lon egasining ochiq aloqa ma'lumotlari</p>
+    <div class="market-contact-method">
+      <span class="market-contact-icon"><i class="fa-solid fa-phone" aria-hidden="true"></i></span>
+      <div class="market-contact-value"><span>Telefon raqami</span>
+        {% if seller_contact.phone %}<a href="tel:{{ seller_contact.phone }}">{{ seller_contact.phone }}</a>{% else %}<strong>Ko‘rsatilmagan</strong>{% endif %}
+      </div>
+      {% if seller_contact.phone %}<a class="market-contact-method-action" href="tel:{{ seller_contact.phone }}">Qo‘ng‘iroq qilish</a>{% endif %}
+    </div>
+    <div class="market-contact-method">
+      <span class="market-contact-icon"><i class="fa-regular fa-envelope" aria-hidden="true"></i></span>
+      <div class="market-contact-value"><span>Email</span>
+        {% if seller_contact.email %}<a href="mailto:{{ seller_contact.email }}">{{ seller_contact.email }}</a>{% else %}<strong>Ko‘rsatilmagan</strong>{% endif %}
+      </div>
+      {% if seller_contact.email %}<a class="market-contact-method-action" href="mailto:{{ seller_contact.email }}">Email yozish</a>{% endif %}
+    </div>
+    <a class="market-contact-chat-link" href="{% url 'chat:chat' %}"><i class="fa-regular fa-comment-dots" aria-hidden="true"></i> Mahalla chatiga o‘tish</a>
+  </dialog>
 {% endblock %}
+{% block extra_js %}<script src="{% static 'js/market.js' %}?v=5"></script>{% endblock %}

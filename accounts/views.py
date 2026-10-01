@@ -10,7 +10,7 @@ from django.shortcuts import redirect, render
 from django.utils import timezone
 import logging
 
-from .forms import RegisterForm, VerifyCodeForm, normalize_email, normalize_phone
+from .forms import MarketContactVisibilityForm, RegisterForm, VerifyCodeForm, normalize_email, normalize_phone
 from .models import LoginHistory
 
 
@@ -229,6 +229,15 @@ def logout_view(request):
 @login_required
 def profile_view(request):
     history = request.user.login_history.all()[:10]
+    if request.method == "POST":
+        contact_visibility_form = MarketContactVisibilityForm(request.POST, instance=request.user)
+        if contact_visibility_form.is_valid():
+            contact_visibility_form.save()
+            messages.success(request, "E'lonlardagi aloqa maxfiyligi sozlamalari saqlandi.")
+            return redirect("accounts:profile")
+        messages.error(request, "Aloqa maxfiyligi sozlamalarini tekshiring.")
+    else:
+        contact_visibility_form = MarketContactVisibilityForm(instance=request.user)
 
     return render(
         request,
@@ -237,6 +246,7 @@ def profile_view(request):
             "profile_user": request.user,
             "history": history,
             "is_admin": getattr(request.user, "is_admin", False),
+            "contact_visibility_form": contact_visibility_form,
         },
     )
 

@@ -4,12 +4,10 @@
 // Initial theme setup for this standalone page
 (function(){
   try{
-    var theme = localStorage.getItem('theme');
-    if(!theme){
-      theme = (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) ? 'dark' : 'light';
-    }
+        var theme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     var s = document.createElement('style'); s.id='theme-init-style'; s.innerHTML='*{transition:none!important}'; document.head.appendChild(s);
+    window.requestAnimationFrame(function(){ window.requestAnimationFrame(function(){ if(s.parentNode) s.parentNode.removeChild(s); }); });
   }catch(e){}
 })();
 </script>
@@ -24,6 +22,10 @@
     <link rel="icon" type="image/png" href="{% static 'images/fav.png' %}?v=2">
     <link rel="shortcut icon" href="{% static 'images/fav.png' %}?v=2">
     <link rel="apple-touch-icon" href="{% static 'images/fav.png' %}?v=2">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <style>
         * {
@@ -33,15 +35,18 @@
             font-family: Arial, sans-serif;
         }
 
-        body {
+        .register-page {
             min-height: 100vh;
+            min-height: 100dvh;
             background: var(--bg);
 
             display: flex;
             justify-content: center;
             align-items: center;
 
-            padding: 20px;
+            padding: 24px 16px;
+            overflow-x: hidden;
+            overflow-y: auto;
         }
 
         .auth-modal {
@@ -374,7 +379,14 @@
         }
 
         @media (max-width: 550px) {
+            .register-page {
+                align-items: flex-start;
+                padding: 16px 12px;
+            }
+
             .auth-modal {
+                width: 100%;
+                max-width: 470px;
                 padding: 25px 20px;
             }
 
@@ -382,10 +394,19 @@
                 grid-template-columns: 1fr;
             }
         }
+
+        @media (max-height: 800px) {
+            .register-page {
+                align-items: flex-start;
+                padding-top: 20px;
+                padding-bottom: 20px;
+            }
+        }
     </style>
+    <link rel="stylesheet" href="{% static 'css/reference-ui.css' %}">
 </head>
 
-<body>
+<body class="register-page">
 
 <div class="auth-modal">
 
@@ -721,6 +742,7 @@ function showPassword(id) {
 </script>
 
     <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/reference-ui.js' %}"></script>
 </body>
 
 </html>

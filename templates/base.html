@@ -4,17 +4,11 @@
 // Initial theme setup — run before stylesheets to avoid flash
 (function(){
   try{
-    var theme = localStorage.getItem('theme');
-    if(!theme){
-      if(window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches){
-        theme = 'dark';
-      } else {
-        theme = 'light';
-      }
-    }
+    var theme = localStorage.getItem('theme') || 'dark';
     document.documentElement.setAttribute('data-theme', theme);
     // disable transitions until theme applied
     var s = document.createElement('style'); s.id='theme-init-style'; s.innerHTML='*{transition:none!important}'; document.head.appendChild(s);
+    window.requestAnimationFrame(function(){ window.requestAnimationFrame(function(){ if(s.parentNode) s.parentNode.removeChild(s); }); });
   }catch(e){console.warn(e)}
 })();
 </script>
@@ -30,6 +24,10 @@
     {% if user.is_authenticated %}
       <link rel="stylesheet" href="{% static 'css/dashboard.css' %}" />
     {% endif %}
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.7.2/css/all.min.css">
 
     <!-- Favicon: use static system and cache-bust to avoid stale browser cache -->
     <link rel="icon" type="image/png" href="{% static 'images/fav.png' %}?v=2">
@@ -94,17 +92,24 @@
         background: rgba(0, 0, 0, 0.55);
         backdrop-filter: blur(7px);
 
-        display: none;
+        display: flex;
         align-items: center;
         justify-content: center;
 
         z-index: 99999;
 
         padding: clamp(12px, 3vw, 20px);
+        opacity: 0;
+        visibility: hidden;
+        pointer-events: none;
+        transition: opacity 0.24s ease, visibility 0s linear 0.24s;
       }
 
       .auth-overlay.active {
-        display: flex;
+        opacity: 1;
+        visibility: visible;
+        pointer-events: auto;
+        transition-delay: 0s;
       }
 
       /* MODAL */
@@ -123,11 +128,19 @@
         overflow-y: auto;
 
         box-shadow: var(--shadow);
+        opacity: 0;
+        transform: translateY(8px) scale(0.96);
         transition:
-          transform 0.35s ease,
+          transform 0.3s cubic-bezier(.2, .7, .2, 1),
+          opacity 0.22s ease,
           box-shadow 0.35s ease,
           background-color 0.35s ease,
           border-color 0.35s ease;
+      }
+
+      .auth-overlay.active .auth-modal {
+        opacity: 1;
+        transform: translateY(0) scale(1);
       }
 
       /* CLOSE */
@@ -584,12 +597,51 @@
     </style>
 
     {% block extra_css %} {% endblock %}
+    <link rel="stylesheet" href="{% static 'css/reference-ui.css' %}">
   </head>
 
   <body>
-    <!--
-        HEADERINGDA SHUNI QO'YASAN
-    -->
+    <div class="ticker" role="region" aria-label="Tezkor ma'lumot">
+      <div class="ticker-inner">
+        <span class="ticker-label"><span class="ticker-pulse"></span> TEZKOR</span>
+        <span class="ticker-message">
+          {% if announcements %}
+            {% with ticker_announcement=announcements|first %}{{ ticker_announcement.title }}{% endwith %}
+          {% else %}
+            TINCHLIK24 mahalla platformasi
+          {% endif %}
+        </span>
+        <span class="ticker-meta"><i class="fa-regular fa-clock" aria-hidden="true"></i><time data-live-clock>--:--:--</time></span>
+        <span class="ticker-meta ticker-emergency"><a href="tel:102">102</a><span>/</span><a href="tel:103">103</a></span>
+        <label class="language-select"><span class="sr-only">Til</span><select aria-label="Til"><option value="uz">UZ</option></select></label>
+      </div>
+    </div>
+    <header class="site-header">
+      <a class="site-brand" href="{% url 'home' %}" aria-label="TINCHLIK24 bosh sahifa">
+        <span class="brand-mark"><i class="fa-solid fa-house-chimney" aria-hidden="true"></i></span>
+        <span class="brand-copy"><strong>TINCHLIK<span>24</span></strong><small>MAHALLA PLATFORMASI</small></span>
+      </a>
+      <button class="mobile-menu-toggle" type="button" aria-label="Menyuni ochish" aria-expanded="false" aria-controls="primary-navigation" data-menu-toggle>
+        <i class="fa-solid fa-bars" aria-hidden="true"></i>
+      </button>
+      <nav class="primary-navigation" id="primary-navigation" aria-label="Asosiy navigatsiya" data-navigation>
+        <a href="{% url 'home' %}#news">Yangiliklar</a>
+        <a href="{% url 'chat:chat' %}">Mahalla hayoti</a>
+        <a href="{% url 'home' %}#services">Xizmatlar</a>
+        <a href="{% url 'market:listings' %}">E'lonlar</a>
+      </nav>
+      <div class="header-actions">
+        <button class="theme-toggle header-theme-toggle" id="themeToggle" type="button" aria-label="Yorug‘ mavzuni yoqish" title="Mavzuni almashtirish"><i class="fa-regular fa-sun" aria-hidden="true"></i></button>
+        {% if user.is_authenticated %}
+          <a class="header-account" href="{% url 'accounts:profile' %}" aria-label="Shaxsiy kabinet"><i class="fa-regular fa-user" aria-hidden="true"></i><span>Shaxsiy kabinet</span></a>
+          <a class="header-contact" href="{% url 'chat:chat' %}" aria-label="Mahalla chat"><i class="fa-regular fa-comments" aria-hidden="true"></i><span>Mahalla chat</span></a>
+          <a class="header-logout" href="{% url 'accounts:logout' %}" aria-label="Tizimdan chiqish" title="Tizimdan chiqish"><i class="fa-solid fa-arrow-right-from-bracket" aria-hidden="true"></i></a>
+        {% else %}
+          <a class="header-account" href="{% url 'accounts:register' %}?tab=login" aria-label="Shaxsiy kabinet"><i class="fa-regular fa-user" aria-hidden="true"></i><span>Shaxsiy kabinet</span></a>
+          <a class="header-contact" href="{% url 'accounts:register' %}?tab=register" aria-label="Ro‘yxatdan o‘tish"><i class="fa-solid fa-user-plus" aria-hidden="true"></i><span>Ro‘yxatdan o‘tish</span></a>
+        {% endif %}
+      </div>
+    </header>
 
     <!-- =========================
          REGISTER / LOGIN MODAL
@@ -668,6 +720,11 @@
               placeholder="example@gmail.com"
               required
             />
+          </div>
+
+          <div class="input-box">
+            <label> Telefon raqam </label>
+            <input type="tel" name="telefon" placeholder="+998 90 123 45 67" required />
           </div>
 
           <div class="input-box">
@@ -838,7 +895,7 @@
       </div>
 
       <div class="nav-actions">
-        <button class="theme-toggle" id="themeToggle" type="button" aria-label="Temani o'zgartirish">☀️</button>
+        <button class="theme-toggle" id="legacyThemeToggle" type="button" aria-label="Temani o'zgartirish">☀️</button>
 
         <div class="avatar-wrap">
           <button class="avatar-button" type="button" aria-haspopup="true" aria-expanded="false">
@@ -887,6 +944,18 @@
     <!-- SAHIFALAR SHU YERGA KELADI -->
 
     {% block content %} {% endblock %}
+
+    <footer class="site-footer">
+      <div class="footer-content">
+        <a class="site-brand footer-brand" href="{% url 'home' %}">
+          <span class="brand-mark"><i class="fa-solid fa-house-chimney" aria-hidden="true"></i></span>
+          <span class="brand-copy"><strong>TINCHLIK<span>24</span></strong><small>MAHALLA PLATFORMASI</small></span>
+        </a>
+        <p>Mahalladoshlar uchun yagona raqamli muloqot va e'lonlar maydoni.</p>
+        <div class="footer-links"><a href="{% url 'market:listings' %}">E'lonlar</a><a href="{% url 'chat:chat' %}">Mahalla chat</a><a href="{% url 'accounts:profile' %}">Kabinet</a></div>
+        <span class="footer-copy">© {% now "Y" %} TINCHLIK24</span>
+      </div>
+    </footer>
 
     <script>
       const overlay = document.getElementById("authOverlay");
@@ -959,7 +1028,9 @@
 
         document.body.style.overflow = "";
 
-        window.location.href = "/";
+        window.setTimeout(function () {
+          window.location.href = "/";
+        }, 240);
       }
 
       /*
@@ -1055,6 +1126,7 @@
       }
     </script>
     <script src="{% static 'js/theme.js' %}"></script>
+    <script src="{% static 'js/reference-ui.js' %}"></script>
 
     {% if user.is_authenticated %}
       <script src="{% static 'js/dashboard.js' %}"></script>

@@ -74,6 +74,8 @@ class User(AbstractUser):
     email = models.EmailField(unique=True)
     email_verified = models.BooleanField(default=False)
     telefon = models.CharField(max_length=20, unique=True, null=True, blank=True)
+    market_phone_visible = models.BooleanField(default=False)
+    market_email_visible = models.BooleanField(default=False)
 
     is_phone_verified = models.BooleanField(default=False)
     registered_via = models.CharField(

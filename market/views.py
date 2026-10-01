@@ -1,16 +1,20 @@
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib.auth.decorators import login_required
+from django.http import Http404
 from django.urls import reverse
 from django.core.paginator import Paginator
 from django.db.models import Q
+from adminpanel.models import Report
 from .models import Listing, ListingImage
-from .forms import ListingForm, ImageUploadForm
+from .forms import ListingForm, ImageUploadForm, ListingReportForm
 from django.contrib import messages
 
 
 def listings(request):
-    """List approved listings with search, filters and pagination."""
-    qs = Listing.objects.filter(status=Listing.STATUS_APPROVED).select_related('seller').order_by('-created_at')
+    """Show recent pending/approved ads separately from approved public ads."""
+    qs = Listing.objects.filter(
+        status__in=(Listing.STATUS_PENDING, Listing.STATUS_APPROVED)
+    ).select_related('seller').prefetch_related('images')
 
     # Search
     q = request.GET.get('q')
@@ -43,31 +47,86 @@ def listings(request):
     if neighborhood:
         qs = qs.filter(neighborhood__icontains=neighborhood)
 
-    # Sorting
+    new_listings = qs.order_by('-created_at')[:8]
+    has_pending_listings = qs.filter(status=Listing.STATUS_PENDING).exists()
+    approved_qs = qs.filter(status=Listing.STATUS_APPROVED).order_by('-created_at')
+
+    # Sorting applies to approved all-listings results; recent ads stay newest-first.
     sort = request.GET.get('sort')
     if sort == 'price_asc':
-        qs = qs.order_by('price')
+        approved_qs = approved_qs.order_by('price')
     elif sort == 'price_desc':
-        qs = qs.order_by('-price')
+        approved_qs = approved_qs.order_by('-price')
     elif sort == 'newest':
-        qs = qs.order_by('-created_at')
+        approved_qs = approved_qs.order_by('-created_at')
 
     # Pagination
-    paginator = Paginator(qs, 12)
+    paginator = Paginator(approved_qs, 12)
     page = request.GET.get('page')
     listings_page = paginator.get_page(page)
 
+    filter_names = ('q', 'category', 'condition', 'min_price', 'max_price', 'neighborhood')
+    has_active_filters = any(request.GET.get(name, '').strip() for name in filter_names)
+    has_active_filters = has_active_filters or request.GET.get('sort', '') not in ('', 'newest')
+    filter_query = request.GET.copy()
+    filter_query.pop('page', None)
     context = {
         'listings': listings_page,
+        'new_listings': new_listings,
         'query': q or '',
+        'category_choices': Listing.CATEGORY_CHOICES,
+        'condition_choices': Listing.CONDITION_CHOICES,
+        'filter_query': filter_query.urlencode(),
+        'has_active_filters': has_active_filters,
+        'has_pending_listings': has_pending_listings,
     }
     return render(request, 'market/listings.html', context)
 
 
 def listing_detail(request, pk):
     listing = get_object_or_404(Listing.objects.select_related('seller'), pk=pk)
-    images = listing.images.order_by('order').all()
-    return render(request, 'market/detail.html', {'listing': listing, 'images': images})
+    if listing.status == Listing.STATUS_REJECTED and not (
+        request.user.is_authenticated
+        and (request.user.is_staff or listing.seller_id == request.user.pk)
+    ):
+        raise Http404
+    seller = listing.seller
+    images = listing.images.exclude(image='').order_by('order')
+    published = Listing.objects.filter(status=Listing.STATUS_APPROVED).select_related('seller').prefetch_related('images').exclude(pk=listing.pk)
+    similar_listings = published.filter(category=listing.category).order_by('-created_at')[:4]
+    seller_listings = published.filter(seller_id=listing.seller_id).order_by('-created_at')[:4]
+    return render(request, 'market/detail.html', {
+        'listing': listing,
+        'images': images,
+        'similar_listings': similar_listings,
+        'seller_listings': seller_listings,
+        'seller_contact': {
+            'name': seller.get_full_name() or "E'lon sotuvchisi",
+            'avatar_url': seller.profile_photo_url,
+            'joined_at': seller.date_joined,
+            'phone': seller.telefon if seller.market_phone_visible and seller.telefon else '',
+            'email': seller.email if seller.market_email_visible and seller.email else '',
+        },
+    })
+
+
+@login_required
+def report_listing(request, pk):
+    listing = get_object_or_404(Listing, pk=pk)
+    if request.method == 'POST':
+        form = ListingReportForm(request.POST)
+        if form.is_valid():
+            Report.objects.create(
+                reporter=request.user,
+                target_type=Report.REPORT_TARGET_POST,
+                target_id=str(listing.pk),
+                reason=form.cleaned_data['reason'],
+                details=form.cleaned_data['details'],
+            )
+            messages.success(request, "Shikoyatingiz moderatorlarga yuborildi.")
+        else:
+            messages.error(request, "Shikoyat ma'lumotlarini tekshiring.")
+    return redirect('market:listing_detail', pk=listing.pk)
 
 
 @login_required
@@ -93,7 +152,7 @@ def create_listing(request):
             for idx, f in enumerate(images[:8]):
                 ListingImage.objects.create(listing=listing, image=f, order=idx)
 
-            messages.success(request, "E'loningiz tekshirish uchun yuborildi.")
+            messages.success(request, "E'loningiz moderatsiya uchun yuborildi.")
             return redirect(reverse('market:listing_detail', args=[listing.pk]))
         else:
             # collect errors and show
